@@ -1,5 +1,10 @@
 #include "image_processing.h"
+#include "./usart/bsp_debug_usart.h"
 //#include "math.h"
+
+	#define __USART_DISPLAY_IMAGE
+//	#define __USART_DISPLAY_MATRIX
+
 
 /*
  * ****** 能够使用的资源 *******
@@ -50,8 +55,7 @@ void Creat_LCD(void)
 	uint32_t i;
 	uint8_t rb,g;
 	
-	//循环选取第i行第j列的值
-	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )	//行扫描
+	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
 	{
 		rb = gray_array[i] / 8;
 		g = gray_array[i] / 4;
@@ -115,28 +119,8 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 void Image_Fix(void)	//图像算法
 {
 	uint32_t i,j;
-	
-	
-	
-	
-		//动态阈值法
 
-//	//这只是简单的图像复制
-//	for(i = 0;i<IMG_WIDTH*IMG_HEIGHT*2;i++)
-//	{
-//		CAMERA_BUFFER_ARRAY[1][i] = CAMERA_BUFFER_ARRAY[0][i];
-//		
-//		
-//	}
-	
-	//使用8位灰度函数
-//	for(i = 1;i<=IMG_HEIGHT;i++)
-//	{
-//		for(j = 1;j<=IMG_WIDTH;j++)
-//		{
-//			To_LCD(i,j,		To_Gray(i,j)	,0x80);
-//		}
-//	}
+
 	
 	//灰度 --> 暂存
 	for(i = 1;i<=IMG_HEIGHT;i++)
@@ -156,30 +140,61 @@ void Image_Fix(void)	//图像算法
 		}
 	}
 	
-	
-	
-//    float value=0;
-//	float a,b,c,d,threhold=0;
-//	int done=0;
-//	i=0;j=0;//int i ,j = 0;
-//	for(i = 2;i<IMG_HEIGHT ; i++)
-//	{	
-//		for (j = 2;j<IMG_WIDTH ; j++)	
-//		{
-//	    a=(To_Gray(i-1,j-1)+To_Gray(i,j-1)+To_Gray(i+1,j-1))-(To_Gray(i-1,j+1)+To_Gray(i,j-1)+To_Gray(i+1,j+1));
-//        a=my_abs(a);
-//		b=(To_Gray(i-1,j-1)+To_Gray(i-1,j)+To_Gray(i-1,j+1))-(To_Gray(i+1,j-1)+To_Gray(i+1,j)+To_Gray(i+1,j+1));
-//	    b=my_abs(b);
-//		 if (a>b)
-//		 { c=a;}
-//		 else 
-//          {c=b;}
-//		 To_Gray_LCD(i,j,c);
-//		}	
-//	}
+}
 
-
+//从串口显示图像，配合山外多功能调试助手
+void Usart_Display_Image(void)
+{
+	uint32_t i;
+	uint8_t ch;
+	
+	//发送包头
+	ch = 0x01;
+	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = 0xFE;
+	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	
+	//发送图像
+	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
+	{		
+		ch = gray_array[i];
 		
+		//从串口发送1byte
+		USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	}
+	
+	//发送包尾
+	ch = 0xFE;
+	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = 0x01;
+	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	
+}
+
+
+//从串口显示矩阵，直接用串口调试助手查看
+void Usart_Display_Matrix(void)
+{
+	uint32_t i,j;
+	uint8_t ch;
+	
+	//发送图像
+	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
+	{
+		for(j = 0;j<IMG_WIDTH;j++)	//列扫描
+		{
+			ch = gray_array[i];
+		
+			printf("%03d  ",ch);	//强制显示三位数，前面补0
+		}
+		printf("\n");	//每行结束回车
+	}
+	printf("\n\n\n\n\n");	//全部发送结束后空4行
 }
 
 //非DMA方式显示
@@ -275,44 +290,31 @@ void DMA2_Stream0_Init(void)
 
 uint8_t image_updata_flag = 0;
 void Image_Process(void)
-{	 
+{
 	DCMI_CaptureCmd(ENABLE);			//读取一帧图像到缓存
 	
 	//新写法
-	//延时150ms 或 图像采集完成中断置位
+	//延时1s 或 图像采集完成中断置位
 	image_updata_flag = 0;
 	Task_Delay[9] = 1000;
 	while(Task_Delay[9]!=0 && image_updata_flag == 0){}
 	
-//	image_updata_flag = 0;
-//	Task_Delay[9] = 1000;
-//	while(1)
-//	{
-//		if(Task_Delay[9]==0)
-//		{
-//			break;
-//		}
-//			
-//		if(Task_Delay[9]<=500)
-//		{
-//			if(image_updata_flag != 0)
-//			{
-//				break;
-//			}
-//			break;
-//		}
-
-//	}
-	
-	//老写法
+//	//老写法
 //	Delay(150);	//加150ms延迟，确保DMA2已经完成从DCMI读到显存中
 	
-	Creat_Gray();	//生成灰度矩阵
+	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
-	Creat_LCD();	//还原RGB565图像
+	Creat_LCD();	//还原RGB565图像，存入显示缓存
+		
+	#if defined(__USART_DISPLAY_IMAGE)
+	Usart_Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+	#elif defined(__USART_DISPLAY_MATRIX)
+	Usart_Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+	#endif
+	
 
-	//Camera_Buffer_To_Lcd_Buffer();	//图像从缓存搬运到显存
-	DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);
+//	Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
+	DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 
 }
 
@@ -377,3 +379,21 @@ void Image_Process(void)
 //	CAMERA_BUFFER_ARRAY[1][num] = (g << 5) + rb;
 //	
 //}
+
+
+//	//这只是简单的图像复制
+//	for(i = 0;i<IMG_WIDTH*IMG_HEIGHT*2;i++)
+//	{
+//		CAMERA_BUFFER_ARRAY[1][i] = CAMERA_BUFFER_ARRAY[0][i];
+//		
+//		
+//	}
+	
+	//使用8位灰度函数
+//	for(i = 1;i<=IMG_HEIGHT;i++)
+//	{
+//		for(j = 1;j<=IMG_WIDTH;j++)
+//		{
+//			To_LCD(i,j,		To_Gray(i,j)	,0x80);
+//		}
+//	}
