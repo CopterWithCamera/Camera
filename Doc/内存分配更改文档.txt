@@ -1,0 +1,34 @@
+(1) 修改启动文件，在__main 执行之前初始化 SDRAM；   
+
+替换SRAM变量分配例程2中的启动文件
+
+在LCD初始化函数中取消SDRAM的初始化函数
+
+(2) 在 sct 文件中增加外部 SDRAM 空间对应的执行域；
+
+把keil自动生成的sct文件替换SRAM变量分配例程2中的sct文件
+
+(3) 在 SDRAM 中的执行域中选择一个自定义节区“ EXRAM”；
+
+把keil自动生成的sct文件替换SRAM变量分配例程2中的sct文件
+
+(4) 使用__attribute__关键字指定变量分配到节区“ EXRAM”；
+(5) 使用宏封装__attribute__关键字，简化变量定义；
+
+添加include.h，在其中定义	#define __EXRAM  __attribute__ ((section ("EXRAM")))
+
+(6) 解决SRAM作为现存时导致的冲突问题，注意显示屏有两个显示层
+
+在 bsp_lcd.c 开头处有显存定义， uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM; 
+
+其中 BUFFER_OFFSET * 2 的目的是分配一段连续的空间，能够同时容纳两个显示层
+
+长度由 BUFFER_OFFSET 宏决定，仍然受 #define LCD_RGB_888  0 宏控制
+
+
+在 bsp_lcd.h 中注释掉所有 LCD_FRAME_BUFFER 赋值，
+
+然后在最后面宏判断的外面增加对 LCD_FRAME_BUFFER_ARRAY 的 extern ，
+
+并用 (uint_32)LCD_FRAME_BUFFER_ARRAY 给 LCD_FRAME_BUFFER 赋值。
+

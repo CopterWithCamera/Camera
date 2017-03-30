@@ -1,0 +1,61 @@
+1.按照内存分配更改文档修改内存配置，用数组划分显存空间
+
+2.封装main函数中的初始化函数，得到
+									void My_RAM_TEST(void);			//RAM测试程序
+									void My_LCD_Init(void);
+									void My_Camera_Init(void);
+									
+3.在 stm32f4xx_it.c 中 DCMI_IRQHandler() 里对 [  fps++; //帧率计数  ]  增加宏定义控制，防止没有必要的自加
+												
+
+4.添加外部中断 KEY1 和 KEY2
+
+中断服务函数在 stm32f4xx_it 里
+
+5.DCMI改为快照模式，使用 DCMI_CaptureCmd(ENABLE); 函数启动一帧图像采集
+
+6.建立 image_processing.c 和 image_processing.h 作为图像处理部分代码存放位置
+  
+  显存以及相关配置也由 image_processing.c 和 image_processing.h 配置
+  
+7.修改摄像头的目标缓存地址为 
+
+uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//[2块区域][长度*宽度*2个字节]
+
+增加手动 缓存 -> 显存 datatrans()函数，图像大小由 IMG_WIDTH 和 IMG_HEIGHT 确定
+
+8.在 main 函数里定义全局变量 flag ，在while(1) 和 void KEY2_IRQHandler() 中调用，切换自动采图和手动采图
+
+9.开启浮点运算器
+
+10.增加 void Image_Process(void) 函数，自动完成读图、运算、搬运到显存的所有工作
+
+11.发现 My_RAM_TEST() 会造成屏幕抖动
+
+12.！！！！注意！！！！！
+    keil的自动优化有bug！！！！
+	必须把优化级别设为level0才可以！！！！
+	默认是level2，会把有用的东西优化掉。
+	
+13.帧率控制宏定义被改到include.h
+
+
+现存问题：
+1.摄像头自动对焦函数初始化容易失败
+
+2.RAM_TEST()会造成许多莫名其妙的BUG
+
+14.修改摄像头分辨率调整策略为自动调整
+
+15.修正了灰度算法高低八位取反了的错误
+
+16.新增暂存区，重构像素点处理函数
+
+数据流向:
+RGB565彩色 --> 灰度数组
+灰度数组 --> 暂存数组
+暂存数组 --> 灰度数组
+灰度数组 --> RGB565显示
+
+
+

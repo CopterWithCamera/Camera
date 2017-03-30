@@ -1,0 +1,9 @@
+OV5640  ->  DCMI（快照模式）  ->   DMA2   ->  缓冲区
+
+DCMI在快照模式下需要手动调用  DCMI_CaptureCmd(ENABLE);   来启动一帧图像的采集
+
+在本工程中，DMA2用于传输DCMI数据到显存或缓冲区，DMA2的配置 和 DCMI 的配置是联动的；
+只要在bsp_ov5640中调整相应参数，DMA就能自动传输数据
+
+
+
