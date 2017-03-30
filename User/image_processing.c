@@ -2,10 +2,6 @@
 #include "./usart/bsp_debug_usart.h"
 //#include "math.h"
 
-	#define __USART_DISPLAY_IMAGE
-//	#define __USART_DISPLAY_MATRIX
-
-
 /*
  * ****** 能够使用的资源 *******
  * 
@@ -21,6 +17,13 @@
  * 缓存大小一定要用 img_width 和 img_height 计算
  * 
  */
+ 
+ 
+ 
+//	图像传输方式选择（只能使能一个）
+	#define __USART_DISPLAY_IMAGE
+//	#define __USART_DISPLAY_MATRIX
+
 	
 //图像缓存数组，第一行是原图，第二行是处理后的图
 uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
@@ -190,11 +193,11 @@ void Usart_Display_Matrix(void)
 		{
 			ch = gray_array[i];
 		
-			printf("%03d  ",ch);	//强制显示三位数，前面补0
+			printf("%03d ",ch);	//强制显示三位数，前面补0
 		}
-		printf("\n");	//每行结束回车
+		printf("\r\n");	//每行结束回车
 	}
-	printf("\n\n\n\n\n");	//全部发送结束后空4行
+	printf("\r\n\r\n\r\n\r\n");	//全部发送结束后空4行
 }
 
 //非DMA方式显示
