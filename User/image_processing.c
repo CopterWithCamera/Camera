@@ -12,7 +12,7 @@
  * 显存地址： LCD_FRAME_BUFFER
  *
  * 摄像头DMA2配置方式：
- * #define FSMC_LCD_ADDRESS      LCD_FRAME_BUFFER
+ * #define FSMC_LCD_ADD  RESS      LCD_FRAME_BUFFER
  * 把 FSMC_LCD_ADDRESS 的定义配成希望摄像头数据存的地方就行了
  * 缓存大小一定要用 img_width 和 img_height 计算
  * 
@@ -21,8 +21,8 @@
  
  
 //	图像传输方式选择（只能使能一个）
-	#define __USART_DISPLAY_IMAGE
-//	#define __USART_DISPLAY_MATRIX
+//	#define __USART_DISPLAY_IMAGE
+	#define __USART_DISPLAY_MATRIX
 
 	
 //图像缓存数组，第一行是原图，第二行是处理后的图
@@ -123,8 +123,6 @@ void Image_Fix(void)	//图像算法
 {
 	uint32_t i,j;
 
-
-	
 	//灰度 --> 暂存
 	for(i = 1;i<=IMG_HEIGHT;i++)
 	{
