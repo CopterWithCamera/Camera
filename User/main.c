@@ -40,7 +40,7 @@ uint8_t fps=0;
 void My_Camera_Init(void)
 {
 	printf("\r\nSTM32F429 DCMI 驱动OV5640例程\r\n");
-	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640");
+	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640图像处理测试，硬件版本：旧版F429");
 	
 	
 	/* 初始化摄像头GPIO及IIC */
@@ -103,15 +103,15 @@ void My_LCD_Init(void)
 }
 
 
-//定义变量到SDRAM
-uint32_t testValue __EXRAM =7 ;
-//定义数组到SDRAM
-uint8_t testGrup[3] __EXRAM ={1,2,3};
+////定义变量到SDRAM
+//uint32_t testValue __EXRAM =7 ;
+////定义数组到SDRAM
+//uint8_t testGrup[3] __EXRAM ={1,2,3};
 
-//定义变量到SRAM
-uint32_t testValue2  =7 ;
-//定义数组到SRAM
-uint8_t testGrup2[3] ={1,2,3};
+////定义变量到SRAM
+//uint32_t testValue2  =7 ;
+////定义数组到SRAM
+//uint8_t testGrup2[3] ={1,2,3};
 
 void My_RAM_TEST(void)
 {
@@ -200,11 +200,13 @@ int main(void)
 						
 			LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
 
-			LCD_ClearLine(LINE(17));
-			sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
-			
 			/*输出帧率*/
+//			LCD_ClearLine(LINE(17));
+			sprintf((char*)dispBuf, "      ");
 			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+			sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
+			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+			
 			//重置
 			fps =0;
 			
