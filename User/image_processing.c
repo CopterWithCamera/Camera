@@ -21,9 +21,12 @@
  
  
 //	图像传输方式选择（只能使能一个）
-//	#define __USART_DISPLAY_IMAGE
-//	#define __USART_DISPLAY_MATRIX
-	#define __USART_DISPALY_WAVE
+//	#define __USART_DISPLAY_IMAGE	//显示图像
+//	#define __USART_DISPLAY_MATRIX	//显示矩阵
+	#define __USART_DISPALY_WAVE	//显示波形
+	
+	#define __DISPALY_DATA
+	#define __DISPALY_GRAPH
 	
 //图像缓存数组，第一行是原图，第二行是处理后的图
 uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
@@ -398,11 +401,12 @@ void Draw_Graph()
 	/*
 	
 	x轴长度540
-	y轴长度200
+	y轴长度200（±100）
 	
-	画90个点，每个点间隔6个像素
+	每行画90个点，每个点间隔6个像素
 	
 	*/
+	
 	static int x = 0;
 	int y1,y2 = 0;
 
@@ -445,12 +449,16 @@ void Draw_Graph()
 	//横轴累加
 	x++;
 	
+	
+	
 	//位移
 	y1 = 110 + length;
+	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
 	LCD_DrawFullCircle(240 + x*6,(uint16_t)y1 ,2);
 	
 	//速度
 	y2 = 330 + speed;
+	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
 	LCD_DrawFullCircle(240 + x*6,(uint16_t)y2 ,2);
 	
 	if(x>=89)
@@ -491,9 +499,17 @@ void Image_Process(void)
 	
 	#endif
 	
+	#if defined(__DISPALY_DATA)
+	
 	Display_data();	//显示偏移距离和水平速度
+	
+	#endif
+	
+	#if defined(__DISPALY_GRAPH)
+	
 	Draw_Graph();	//绘制图形曲线
 	
+	#endif
 
 //	Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
 	DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
