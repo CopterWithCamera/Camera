@@ -21,9 +21,9 @@
 //**************************************************************
  
 //	图像传输方式选择（只能使能一个）
-//	#define __USART_DISPLAY_IMAGE	//显示图像
+	#define __USART_DISPLAY_IMAGE	//显示图像
 //	#define __USART_DISPLAY_MATRIX	//显示矩阵
-	#define __USART_DISPALY_WAVE	//显示波形
+//	#define __USART_DISPALY_WAVE	//显示波形
 	
 	#define __DISPALY_DATA
 	#define __DISPALY_GRAPH
