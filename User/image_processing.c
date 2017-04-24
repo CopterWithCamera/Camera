@@ -18,7 +18,7 @@
  * 
  */
  
- 
+//**************************************************************
  
 //	图像传输方式选择（只能使能一个）
 //	#define __USART_DISPLAY_IMAGE	//显示图像
@@ -28,9 +28,10 @@
 	#define __DISPALY_DATA
 	#define __DISPALY_GRAPH
 	
+//**************************************************************	
+	
 //图像缓存数组，第一行是原图，第二行是处理后的图
 uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
-//uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] ;	//长度*宽度*2个字节  *  2块区域
 
 uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
 uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
@@ -148,7 +149,7 @@ void Image_Fix(void)	//图像算法
 		}
 	}
 	
-	k = k + 0.1;
+	k = k + 0.1f;
 	if(k >= 314)
 		k = 0;
 	
@@ -282,6 +283,10 @@ void Usart_Display_Wave(void)
 	
 	
 }
+
+
+//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef LCD_DISPLAY
 
 //非DMA方式显示
 void Camera_Buffer_To_Lcd_Buffer(void)
@@ -467,6 +472,8 @@ void Draw_Graph()
 	}
 }
 
+#endif
+
 uint8_t image_updata_flag = 0;
 void Image_Process(void)
 {
@@ -499,20 +506,27 @@ void Image_Process(void)
 	
 	#endif
 	
-	#if defined(__DISPALY_DATA)
 	
-	Display_data();	//显示偏移距离和水平速度
+	
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+	
+		#if defined(__DISPALY_DATA)
+		
+		Display_data();	//显示偏移距离和水平速度
+		
+		#endif
+		
+		#if defined(__DISPALY_GRAPH)
+		
+		Draw_Graph();	//绘制图形曲线
+		
+		#endif
+	
+//		Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
+		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 	
 	#endif
-	
-	#if defined(__DISPALY_GRAPH)
-	
-	Draw_Graph();	//绘制图形曲线
-	
-	#endif
-
-//	Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
-	DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 
 }
 

@@ -39,9 +39,13 @@ uint8_t fps=0;
 
 void My_Camera_Init(void)
 {
+//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef LCD_DISPLAY
+	
 	printf("\r\nSTM32F429 DCMI 驱动OV5640例程\r\n");
 	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640图像处理测试，硬件版本：旧版F429");
 	
+#endif
 	
 	/* 初始化摄像头GPIO及IIC */
 	OV5640_HW_Init();   
@@ -58,9 +62,16 @@ void My_Camera_Init(void)
 	}
 	else
 	{
+		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+		#ifdef LCD_DISPLAY
+		
 		LCD_SetTextColor(LCD_COLOR_RED);
 		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*) "         没有检测到OV5640，请重新检查连接。");
 		CAMERA_DEBUG("没有检测到OV5640摄像头，请重新检查连接。\r\n");
+		
+		#endif
+		
+		CAMERA_DEBUG("未检测到摄像头\r\n");
 
 		while(1);  
 	}
@@ -157,7 +168,7 @@ int main(void)
 
 	Debug_USART_Config();   
 	
-	My_RAM_TEST();	//先检查一下SDRAM是否正常,在USART1上有输出
+//	My_RAM_TEST();	//先检查一下SDRAM是否正常,在USART1上有输出
 	
 	/* 配置SysTick 为1ms中断一次,时间到后触发定时中断，
 	*进入stm32fxx_it.c文件的SysTick_Handler处理，通过数中断次数计时
@@ -167,15 +178,65 @@ int main(void)
 	
 	EXTI_Key_Config();	//初始化外部中断按键
 
-	My_LCD_Init();		//初始化LCD
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+		
+		My_LCD_Init();		//初始化LCD
+		
+	#endif
 	
 	My_Camera_Init();	//初始化OV5640
 	
-	DMA2_Stream0_Init();	//缓存 -> 显存
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+			
+		DMA2_Stream0_Init();	//缓存 -> 显存（此处只是初始化，并没有开启）
+		
+	#endif
 
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{	
+		//全速更新
+		if(flag == 0)
+		{
+			Image_Process();	//图像处理函数，包括读图和写入显存
+		}
+		
+		
+		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+		#ifdef LCD_DISPLAY
+			
+			//显示帧率，默认不显示		
+			#if FRAME_RATE_DISPLAY	
+			
+			if(Task_Delay[0]==0)
+			{
+							
+				LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
+
+				/*输出帧率*/
+	//			LCD_ClearLine(LINE(17));
+				sprintf((char*)dispBuf, "      ");
+				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+				sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
+				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+				
+				//重置
+				fps =0;
+				
+				Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
+			}
+				
+			#endif
+			
+		#endif
+		
+	}
+
+}
+/*********************************************END OF FILE**********************/
+
 //		//定时更新图像（用于测试）
 //		if(Task_Delay[1]==0 && flag == 0)
 //		{
@@ -185,38 +246,3 @@ int main(void)
 //			
 //			Task_Delay[1]=100; //此值每1ms会减1，减到0才可以重新进来这里
 //		}
-		
-		//全速更新
-		if(flag == 0)
-		{
-			Image_Process();	//图像处理函数，包括读图和写入显存
-		}
-		
-		//显示帧率，默认不显示		
-		#if FRAME_RATE_DISPLAY	
-		
-		if(Task_Delay[0]==0)
-		{
-						
-			LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
-
-			/*输出帧率*/
-//			LCD_ClearLine(LINE(17));
-			sprintf((char*)dispBuf, "      ");
-			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-			sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
-			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-			
-			//重置
-			fps =0;
-			
-			Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
-		}
-			
-		#endif
-		
-	}
-
-}
-/*********************************************END OF FILE**********************/
-

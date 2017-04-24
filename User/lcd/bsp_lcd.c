@@ -25,7 +25,6 @@
 uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;  
 
 
-
 /** @addtogroup Utilities
   * @{
   */ 

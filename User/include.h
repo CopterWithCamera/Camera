@@ -13,6 +13,8 @@
 //设置变量定义到“EXRAM”节区的宏
 #define __EXRAM  __attribute__ ((section ("EXRAM")))
 
+//	#define LCD_DISPLAY
+
 extern uint8_t dispBuf[100];
 
 #endif /* __INCLUDE_H */

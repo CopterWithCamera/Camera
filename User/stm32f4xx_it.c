@@ -174,8 +174,11 @@ extern uint16_t img_width, img_height;
 extern uint8_t fps;
 
 
+//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef LCD_DISPLAY
 
-uint16_t line_num0 =0;
+//缓存 --> 显存
+uint16_t line_num0 =1;
 void DMA2_Stream0_IRQHandler(void)
 {
 	if(  DMA_GetITStatus(DMA2_Stream0,DMA_IT_TCIF0) == SET )    
@@ -198,6 +201,9 @@ void DMA2_Stream0_IRQHandler(void)
 	DMA_ClearITPendingBit(DMA2_Stream0,DMA_IT_TCIF0);
 }
 
+#endif
+
+//DCMI --> 缓存
 static uint16_t line_num =0;	//记录传输了多少行
 void DMA2_Stream1_IRQHandler(void)
 {
@@ -240,6 +246,8 @@ void DCMI_IRQHandler(void)
 	}
 }
 
+
+
 extern int flag;
 //KEY1外部中断
 void KEY1_IRQHandler(void)
@@ -248,7 +256,7 @@ void KEY1_IRQHandler(void)
 	if(EXTI_GetITStatus(KEY1_INT_EXTI_LINE) != RESET) 
 	{
 		
-		printf("Key1\n");
+//		printf("Key1\n");
 		
 		if(flag != 0)
 		{
@@ -271,7 +279,7 @@ void KEY2_IRQHandler(void)
 		else
 			flag = 1;
 			
-		printf("Key2\n");
+//		printf("Key2\n");
 		
 		//清除中断标志位
 		EXTI_ClearITPendingBit(KEY2_INT_EXTI_LINE);     
