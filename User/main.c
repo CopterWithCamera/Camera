@@ -27,7 +27,8 @@
 #include "./camera/ov5640_AF.h"
 #include "./key/bsp_exti.h"
 #include "image_processing.h"
-
+#include "ff.h"
+#include "rgbTObmp.h"
 
 /*简单任务管理*/
 uint32_t Task_Delay[NumOfTask];
@@ -155,20 +156,76 @@ void My_RAM_TEST(void)
 	
 }
 
+//禁用WiFi模块（用sd卡必须禁用wifi，原因不明）
+static void BL8782_PDN_INIT(void)
+{
+  /*定义一个GPIO_InitTypeDef类型的结构体*/
+  GPIO_InitTypeDef GPIO_InitStructure;
+
+  RCC_AHB1PeriphClockCmd ( RCC_AHB1Periph_GPIOG, ENABLE); 							   
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;	
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;   
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; 
+  GPIO_Init(GPIOG, &GPIO_InitStructure);	
+  
+  GPIO_ResetBits(GPIOG,GPIO_Pin_9);  //禁用WiFi模块
+}
+
+//SD卡初始化函数
+FATFS fs;					/* Work area (file system object) for logical drives */
+FRESULT res_sd_conf; 
+u8 SDCard_Init(void)
+{
+	/*禁用wifi模块*/
+	BL8782_PDN_INIT();
+	
+	//SD卡挂载
+	res_sd_conf = f_mount(&fs,"0:",1);  //挂载文件系统
+	
+	//如果没有文件系统，则要格式化，再挂载
+	if(res_sd_conf == FR_NO_FILESYSTEM)
+	{
+		printf("》SD卡还没有文件系统，即将进行格式化...\r\n");
+		/* 格式化 */
+		res_sd_conf=f_mkfs("0:",0,0);							
+		
+		if(res_sd_conf == FR_OK)
+		{
+			printf("》SD卡已成功格式化文件系统。\r\n");
+			/* 格式化后，先取消挂载 */
+			res_sd_conf = f_mount(NULL,"0:",1);			
+			/* 重新挂载	*/			
+			res_sd_conf = f_mount(&fs,"0:",1);
+		}
+		else
+		{
+			printf("《《格式化失败。》》\r\n");
+			return 0;	//SD卡挂载失败
+		}
+	}
+	else
+	{
+		printf("》SD卡挂载成功\r\n");
+	}
+	return 1;	//SD卡挂载成功
+}
+
+
 /**
   * @brief  主函数
   * @param  无
   * @retval 无
   */
-  
+
 int flag = 0;	//用于按键中断
+int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 
 	Debug_USART_Config();   
-	
-//	My_RAM_TEST();	//先检查一下SDRAM是否正常,在USART1上有输出
 	
 	/* 配置SysTick 为1ms中断一次,时间到后触发定时中断，
 	*进入stm32fxx_it.c文件的SysTick_Handler处理，通过数中断次数计时
@@ -193,7 +250,9 @@ int main(void)
 		DMA2_Stream0_Init();	//缓存 -> 显存（此处只是初始化，并没有开启）
 		
 	#endif
-
+	
+	SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
+	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{	

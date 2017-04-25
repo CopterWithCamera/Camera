@@ -1,6 +1,7 @@
 #include "image_processing.h"
 #include "./usart/bsp_debug_usart.h"
 #include "math.h"
+#include "rgbTObmp.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -53,7 +54,7 @@ void Creat_Gray()
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
 		r = (CAMERA_BUFFER_ARRAY[0][i+1] >> 3) * 8;
-		g = ((CAMERA_BUFFER_ARRAY[0][i+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[0][i] >> 5) * 4;
+		g = (((CAMERA_BUFFER_ARRAY[0][i+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[0][i] >> 5)) * 4;
 		b = (CAMERA_BUFFER_ARRAY[0][i] & 0x1F) * 8;
 		
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
@@ -527,6 +528,11 @@ void Image_Process(void)
 		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 	
 	#endif
+	
+	if(SD_State)	//如果SD卡挂载成功
+	{
+		TO_SDcard();      //SD卡
+	}
 
 }
 

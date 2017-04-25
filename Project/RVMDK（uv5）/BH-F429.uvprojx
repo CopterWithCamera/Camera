@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F429_439xx,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -733,6 +733,36 @@
               <FileName>整体设计思路.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Doc\整体设计思路.txt</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>FATFS</GroupName>
+          <Files>
+            <File>
+              <FileName>fatfs_sd_sdio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\FATFS\drivers\fatfs_sd_sdio.c</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\FATFS\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\FATFS\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>rgbTObmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\FATFS\rgbTObmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>cc936.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\FATFS\option\cc936.c</FilePath>
             </File>
           </Files>
         </Group>
