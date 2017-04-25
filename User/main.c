@@ -157,7 +157,7 @@ void My_RAM_TEST(void)
 }
 
 //禁用WiFi模块（用sd卡必须禁用wifi，原因不明）
-static void BL8782_PDN_INIT(void)
+void BL8782_PDN_INIT(void)
 {
   /*定义一个GPIO_InitTypeDef类型的结构体*/
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -174,10 +174,12 @@ static void BL8782_PDN_INIT(void)
 }
 
 //SD卡初始化函数
-FATFS fs;					/* Work area (file system object) for logical drives */
-FRESULT res_sd_conf; 
+
 u8 SDCard_Init(void)
 {
+	FATFS fs;					/* Work area (file system object) for logical drives */
+	FRESULT res_sd_conf; 
+	
 	/*禁用wifi模块*/
 	BL8782_PDN_INIT();
 	
@@ -294,6 +296,10 @@ int main(void)
 	}
 
 }
+
+
+
+
 /*********************************************END OF FILE**********************/
 
 //		//定时更新图像（用于测试）
