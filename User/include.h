@@ -17,7 +17,7 @@
 #define FRAME_RATE_DISPLAY 	1
 
 //LCDœ‘ æ
-//#define LCD_DISPLAY
+#define LCD_DISPLAY
 
 
 //*************************************

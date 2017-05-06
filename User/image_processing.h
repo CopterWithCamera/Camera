@@ -15,7 +15,7 @@
 #define	IMG_HEIGHT						48
 #define CAMERA_BUFFER_OFFSET			IMG_WIDTH*IMG_HEIGHT*2
 
-extern uint8_t CAMERA_BUFFER_ARRAY[2][IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;
+extern uint8_t CAMERA_BUFFER_ARRAY[2 * IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;
 
 extern uint8_t image_updata_flag;
 

@@ -240,7 +240,7 @@ int main(void)
 	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
 	#ifdef LCD_DISPLAY
 		
-		My_LCD_Init();		//初始化LCD
+		My_LCD_Init();		//初始化LCD（包括DMA2D初始化）
 		
 	#endif
 	
@@ -249,7 +249,7 @@ int main(void)
 	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
 	#ifdef LCD_DISPLAY
 			
-		DMA2_Stream0_Init();	//缓存 -> 显存（此处只是初始化，并没有开启）
+		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
 		
 	#endif
 	
