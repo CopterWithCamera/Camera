@@ -16,5 +16,6 @@
 //	#define LCD_DISPLAY
 
 extern uint8_t dispBuf[100];
+extern int SD_State;
 
 #endif /* __INCLUDE_H */
