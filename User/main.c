@@ -30,6 +30,9 @@
 #include "ff.h"
 #include "rgbTObmp.h"
 
+//LCD显存（定义在最前边能够消除DMA2D工作不正常错误）
+uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;
+
 /*简单任务管理*/
 uint32_t Task_Delay[NumOfTask];
 
@@ -88,7 +91,6 @@ void My_Camera_Init(void)
 	DCMI_CaptureCmd(ENABLE); 	
 }
 
-
 void My_LCD_Init(void)
 {
 	/*初始化液晶屏*/
@@ -115,45 +117,63 @@ void My_LCD_Init(void)
 }
 
 
-////定义变量到SDRAM
-//uint32_t testValue __EXRAM =7 ;
-////定义数组到SDRAM
-//uint8_t testGrup[3] __EXRAM ={1,2,3};
+//定义变量到SDRAM
+uint32_t testValue __EXRAM =7 ;
+//定义数组到SDRAM
+uint8_t testGrup[4] __EXRAM ={1,2,3,4};
 
-////定义变量到SRAM
-//uint32_t testValue2  =7 ;
-////定义数组到SRAM
-//uint8_t testGrup2[3] ={1,2,3};
+//定义变量到SRAM
+uint32_t testValue2  =7 ;
+//定义数组到SRAM
+uint8_t testGrup2[3] ={1,2,3};
 
 void My_RAM_TEST(void)
 {
-//	uint32_t inerTestValue =10;
-//	char ch;
+	uint32_t inerTestValue =10;
+	char ch;
 
-//	printf("\r\nRAM分配测试程序\r\n");
+	printf("\r\n RAM分配测试程序 \r\n\r\n");
 	
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&inerTestValue,inerTestValue);
+	ch = testValue & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
 	
-//	ch = testValue & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>8) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>16) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>24) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
-//	printf("结果：它的地址为：0x,变量值为：%d,%d,%d\r\n",testGrup[0],testGrup[1],testGrup[2]);
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue2,testValue2);
-//	printf("结果：它的地址为：0x%x,变量值为：%d，%d,%d\r\n",(uint32_t)&testGrup2,testGrup2[0],testGrup2[1],testGrup2[2]);
+	ch = (testValue>>8) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
 	
+	ch = (testValue>>16) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
+	
+	ch = (testValue>>24) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
+	
+	printf("0\r\n");
+	printf("局部变量：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&inerTestValue,inerTestValue);
+	
+	printf("1\r\n");
+	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
+	
+	printf("2\r\n");
+	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
+	
+	printf("3\r\n");
+	printf("全局RAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue2,testValue2);
+	
+	printf("4\r\n");
+	printf("全局RAM数组：它的地址为：0x%x,变量值为：%d，%d,%d\r\n",(uint32_t)&testGrup2,testGrup2[0],testGrup2[1],testGrup2[2]);
+	
+	printf("\r\n");
+	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
+	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
+	printf("全局LCD_FRAME_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&LCD_FRAME_BUFFER_ARRAY);
+	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
+	
+	
+//	LCD_FRAME_BUFFER_ARRAY
+//	CAMERA_BUFFER_ARRAY	
 }
 
 //禁用WiFi模块（用sd卡必须禁用wifi，原因不明）
@@ -221,6 +241,8 @@ u8 SDCard_Init(void)
   * @retval 无
   */
 
+extern  uint32_t CurrentFrameBuffer;
+
 int flag = 0;	//用于按键中断
 int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
@@ -234,6 +256,8 @@ int main(void)
 	*/
 	
 	SysTick_Init();		//用于延时函数
+	
+	My_RAM_TEST();
 	
 	EXTI_Key_Config();	//初始化外部中断按键
 
