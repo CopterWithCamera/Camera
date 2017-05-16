@@ -43,7 +43,6 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define DCMI_DR_ADDRESS			0x50050028
-//#define FSMC_LCD_ADDRESS		LCD_FRAME_BUFFER				//显存地址
 #define FSMC_LCD_ADDRESS		(uint32_t)CAMERA_BUFFER_ARRAY	//缓存区地址
 
 //摄像头采集图像大小

@@ -59,7 +59,7 @@ typedef struct
 #define  LCD_PIXEL_HEIGHT   ((uint16_t)480)
 
 #define LCD_FRAME_BUFFER       ((uint32_t)0xD0000000)
-//#define BUFFER_OFFSET          ((uint32_t)800*480*3)    //sdram为16位的,液晶RGB888
+#define BUFFER_OFFSET          ((uint32_t)800*480*3)    //sdram为16位的,液晶RGB888
 #define LCD_PIXCELS            ((uint32_t)800*480) 
 
 

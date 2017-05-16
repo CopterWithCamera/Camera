@@ -1,6 +1,7 @@
 #include "image_processing.h"
 #include "./usart/bsp_debug_usart.h"
 #include "math.h"
+#include "rgbTObmp.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -12,25 +13,20 @@
  * 显存地址： LCD_FRAME_BUFFER
  *
  * 摄像头DMA2配置方式：
- * #define FSMC_LCD_ADD  RESS      LCD_FRAME_BUFFER
+ * #define FSMC_LCD_ADDRESS      LCD_FRAME_BUFFER
  * 把 FSMC_LCD_ADDRESS 的定义配成希望摄像头数据存的地方就行了
  * 缓存大小一定要用 img_width 和 img_height 计算
  * 
  */
  
+//**************************************************************
  
- 
-//	图像传输方式选择（只能使能一个）
-//	#define __USART_DISPLAY_IMAGE	//显示图像
-//	#define __USART_DISPLAY_MATRIX	//显示矩阵
-	#define __USART_DISPALY_WAVE	//显示波形
+
 	
-	#define __DISPALY_DATA
-	#define __DISPALY_GRAPH
+//**************************************************************	
 	
 //图像缓存数组，第一行是原图，第二行是处理后的图
-uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
-//uint8_t CAMERA_BUFFER_ARRAY[2][ IMG_WIDTH*IMG_HEIGHT*2] ;	//长度*宽度*2个字节  *  2块区域
+uint8_t CAMERA_BUFFER_ARRAY[2 * IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
 
 uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
 uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
@@ -51,9 +47,9 @@ void Creat_Gray()
 	
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
-		r = (CAMERA_BUFFER_ARRAY[0][i+1] >> 3) * 8;
-		g = ((CAMERA_BUFFER_ARRAY[0][i+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[0][i] >> 5) * 4;
-		b = (CAMERA_BUFFER_ARRAY[0][i] & 0x1F) * 8;
+		r = (CAMERA_BUFFER_ARRAY[i+1] >> 3) * 8;
+		g = (((CAMERA_BUFFER_ARRAY[i+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[i] >> 5)) * 4;
+		b = (CAMERA_BUFFER_ARRAY[i] & 0x1F) * 8;
 		
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
@@ -69,8 +65,8 @@ void Creat_LCD(void)
 		rb = gray_array[i] / 8;
 		g = gray_array[i] / 4;
 		
-		CAMERA_BUFFER_ARRAY[1][i*2+1] = (rb << 3) + ((g >> 3) & 0x07);	//低八位在后面，高八位在前面
-		CAMERA_BUFFER_ARRAY[1][i*2] = (g << 5) + rb;
+		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2+1] = (rb << 3) + ((g >> 3) & 0x07);	//低八位在后面，高八位在前面
+		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2] = (g << 5) + rb;
 	}
 }
 
@@ -123,7 +119,18 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 	gray_array[num/2] = gray;
 }
 
+/*******************************************************
 
+函数功能：图像算法
+
+入参：无
+
+出参：无
+
+说明：图像处理函数，可以使用Get_Gray(),To_Temp(),
+	Get_Temp(),To_Gray()是个函数作为数据源.
+
+*******************************************************/
 
 void Image_Fix(void)	//图像算法
 {
@@ -148,7 +155,7 @@ void Image_Fix(void)	//图像算法
 		}
 	}
 	
-	k = k + 0.1;
+	k = k + 0.1f;
 	if(k >= 314)
 		k = 0;
 	
@@ -158,6 +165,9 @@ void Image_Fix(void)	//图像算法
 
 	
 }
+
+
+//************** 串口输出信息 ************************************************
 
 //从串口显示图像，配合山外多功能调试助手
 void Usart_Display_Image(void)
@@ -283,37 +293,25 @@ void Usart_Display_Wave(void)
 	
 }
 
+//******************** LCD显示内容 *********************************************************************
+
+//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef LCD_DISPLAY
+
 //非DMA方式显示
 void Camera_Buffer_To_Lcd_Buffer(void)
 {
 	int i,j;
 	
-	//原图区
-	for(i = 0;i<IMG_HEIGHT;i++)
+	//原图+运算后图（（IMG_HEIGHT*2） * IMG_WIDTH）
+	for(i = 0;i<IMG_HEIGHT*2;i++)
 	{
 		for(j = 0;j<IMG_WIDTH*2;j=j+1)
 		{
-			LCD_FRAME_BUFFER_ARRAY[i*1600+j] = CAMERA_BUFFER_ARRAY[0][i*IMG_WIDTH*2+j];
+			LCD_FRAME_BUFFER_ARRAY[i*1600+j] = CAMERA_BUFFER_ARRAY[i*IMG_WIDTH*2+j];
 		}
 			
 	}
-	
-	//运算后图区
-	for(i = 0;i<IMG_HEIGHT;i++)
-	{
-		for(j = 0;j<IMG_WIDTH*2;j=j+1)
-		{
-			LCD_FRAME_BUFFER_ARRAY[1600*140 + i*1600+j] = CAMERA_BUFFER_ARRAY[1][i*IMG_WIDTH*2+j];
-		}
-			
-	}
-	
-	
-	//800*480
-//	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i++)
-//	{
-//		LCD_FRAME_BUFFER_ARRAY[i] = CAMERA_BUFFER_ARRAY[0][i];
-//	}
 	
 }
 
@@ -374,6 +372,9 @@ void DMA2_Stream0_Init(void)
 	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 	
 	
 }
+
+
+//********************* 在LCD上绘图 *****************************************************************
 
 //显示偏移距离和水平速度
 void Display_data(void)
@@ -467,6 +468,10 @@ void Draw_Graph()
 	}
 }
 
+#endif
+
+//*********************** 总执行函数 **********************************************
+
 uint8_t image_updata_flag = 0;
 void Image_Process(void)
 {
@@ -499,99 +504,32 @@ void Image_Process(void)
 	
 	#endif
 	
-	#if defined(__DISPALY_DATA)
 	
-	Display_data();	//显示偏移距离和水平速度
+	
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+	
+		#if defined(__DISPALY_DATA)
+		
+		Display_data();	//显示偏移距离和水平速度
+		
+		#endif
+		
+		#if defined(__DISPALY_GRAPH)
+		
+		Draw_Graph();	//绘制图形曲线
+		
+		#endif
+	
+//		Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
+		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 	
 	#endif
 	
-	#if defined(__DISPALY_GRAPH)
-	
-	Draw_Graph();	//绘制图形曲线
-	
-	#endif
-
-//	Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
-	DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
+	if(SD_State)	//如果SD卡挂载成功
+	{
+		TO_SDcard();      //SD卡
+	}
 
 }
 
-
-//旧的单点计算灰度函数
-
-//uint8_t To_Gray(uint16_t row,uint16_t column)
-//{
-//	//行：coiumn   范围：1 -- IMG_WIDTH
-//	//列：row      范围：1 -- IMG_HEIGHT
-
-//	uint32_t r,g,b;
-//	uint32_t num;
-//	uint32_t gray; 
-//	
-//	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-//	
-//	r = (CAMERA_BUFFER_ARRAY[0][num] >> 3) * 8;
-//	g = ((CAMERA_BUFFER_ARRAY[0][num] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[0][num+1] >> 5) * 4;
-//	b = (CAMERA_BUFFER_ARRAY[0][num+1] & 0x1F) * 8;
-
-//	gray = (r * 299 + g * 587 + b * 114 + 500) / 1000;
-//	
-//	if(gray >= 256)
-//		printf("灰度算法错误！\n");
-//	
-//	return (uint8_t)gray;
-//}
-
-
-//旧的单点转换为RGB565函数
-
-//void To_LCD(uint16_t row,uint16_t column,uint8_t gray,uint8_t threshold)
-//{
-//	uint32_t num;
-//	
-//	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-//	
-//	if(gray > threshold)
-//	{
-//		CAMERA_BUFFER_ARRAY[1][num] = 0xFF;
-//		CAMERA_BUFFER_ARRAY[1][num+1] = 0xFF;
-//	}
-//	else
-//	{
-//		CAMERA_BUFFER_ARRAY[1][num] = 0x00;
-//		CAMERA_BUFFER_ARRAY[1][num+1] = 0x00;
-//	}
-//}
-
-//void To_Gray_LCD(uint16_t row,uint16_t column,uint8_t gray)
-//{
-//	uint32_t num;
-//	uint8_t rb,g;
-//	
-//	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-//	
-//	rb = gray / 8;
-//	g = gray / 4;
-//	
-//	CAMERA_BUFFER_ARRAY[1][num+1] = (rb << 3) + ((g >> 3) & 0x07);	//低八位在后面，高八位在前面
-//	CAMERA_BUFFER_ARRAY[1][num] = (g << 5) + rb;
-//	
-//}
-
-
-//	//这只是简单的图像复制
-//	for(i = 0;i<IMG_WIDTH*IMG_HEIGHT*2;i++)
-//	{
-//		CAMERA_BUFFER_ARRAY[1][i] = CAMERA_BUFFER_ARRAY[0][i];
-//		
-//		
-//	}
-	
-	//使用8位灰度函数
-//	for(i = 1;i<=IMG_HEIGHT;i++)
-//	{
-//		for(j = 1;j<=IMG_WIDTH;j++)
-//		{
-//			To_LCD(i,j,		To_Gray(i,j)	,0x80);
-//		}
-//	}

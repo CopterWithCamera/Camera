@@ -27,7 +27,11 @@
 #include "./camera/ov5640_AF.h"
 #include "./key/bsp_exti.h"
 #include "image_processing.h"
+#include "ff.h"
+#include "rgbTObmp.h"
 
+//LCD显存（定义在最前边能够消除DMA2D工作不正常错误）
+uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;
 
 /*简单任务管理*/
 uint32_t Task_Delay[NumOfTask];
@@ -39,9 +43,13 @@ uint8_t fps=0;
 
 void My_Camera_Init(void)
 {
+//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef LCD_DISPLAY
+	
 	printf("\r\nSTM32F429 DCMI 驱动OV5640例程\r\n");
 	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640图像处理测试，硬件版本：旧版F429");
 	
+#endif
 	
 	/* 初始化摄像头GPIO及IIC */
 	OV5640_HW_Init();   
@@ -58,9 +66,16 @@ void My_Camera_Init(void)
 	}
 	else
 	{
+		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+		#ifdef LCD_DISPLAY
+		
 		LCD_SetTextColor(LCD_COLOR_RED);
 		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*) "         没有检测到OV5640，请重新检查连接。");
 		CAMERA_DEBUG("没有检测到OV5640摄像头，请重新检查连接。\r\n");
+		
+		#endif
+		
+		CAMERA_DEBUG("未检测到摄像头\r\n");
 
 		while(1);  
 	}
@@ -75,7 +90,6 @@ void My_Camera_Init(void)
 	DCMI_Cmd(ENABLE); 
 	DCMI_CaptureCmd(ENABLE); 	
 }
-
 
 void My_LCD_Init(void)
 {
@@ -103,61 +117,139 @@ void My_LCD_Init(void)
 }
 
 
-////定义变量到SDRAM
-//uint32_t testValue __EXRAM =7 ;
-////定义数组到SDRAM
-//uint8_t testGrup[3] __EXRAM ={1,2,3};
+//定义变量到SDRAM
+uint32_t testValue __EXRAM =7 ;
+//定义数组到SDRAM
+uint8_t testGrup[4] __EXRAM ={1,2,3,4};
 
-////定义变量到SRAM
-//uint32_t testValue2  =7 ;
-////定义数组到SRAM
-//uint8_t testGrup2[3] ={1,2,3};
+//定义变量到SRAM
+uint32_t testValue2  =7 ;
+//定义数组到SRAM
+uint8_t testGrup2[3] ={1,2,3};
 
 void My_RAM_TEST(void)
 {
-//	uint32_t inerTestValue =10;
-//	char ch;
+	uint32_t inerTestValue =10;
+	char ch;
 
-//	printf("\r\nRAM分配测试程序\r\n");
+	printf("\r\n RAM分配测试程序 \r\n\r\n");
 	
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&inerTestValue,inerTestValue);
+	ch = testValue & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
 	
-//	ch = testValue & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>8) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>16) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	
-//	ch = (testValue>>24) & 0xFF;
-//	USART_SendData(DEBUG_USART, (uint8_t) ch);
-//	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
-//	printf("结果：它的地址为：0x,变量值为：%d,%d,%d\r\n",testGrup[0],testGrup[1],testGrup[2]);
-//	printf("结果：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue2,testValue2);
-//	printf("结果：它的地址为：0x%x,变量值为：%d，%d,%d\r\n",(uint32_t)&testGrup2,testGrup2[0],testGrup2[1],testGrup2[2]);
+	ch = (testValue>>8) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
 	
+	ch = (testValue>>16) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
+	
+	ch = (testValue>>24) & 0xFF;
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	
+	
+	printf("0\r\n");
+	printf("局部变量：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&inerTestValue,inerTestValue);
+	
+	printf("1\r\n");
+	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
+	
+	printf("2\r\n");
+	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
+	
+	printf("3\r\n");
+	printf("全局RAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue2,testValue2);
+	
+	printf("4\r\n");
+	printf("全局RAM数组：它的地址为：0x%x,变量值为：%d，%d,%d\r\n",(uint32_t)&testGrup2,testGrup2[0],testGrup2[1],testGrup2[2]);
+	
+	printf("\r\n");
+	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
+	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
+	printf("全局LCD_FRAME_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&LCD_FRAME_BUFFER_ARRAY);
+	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
+	
+	
+//	LCD_FRAME_BUFFER_ARRAY
+//	CAMERA_BUFFER_ARRAY	
 }
+
+//禁用WiFi模块（用sd卡必须禁用wifi，原因不明）
+void BL8782_PDN_INIT(void)
+{
+  /*定义一个GPIO_InitTypeDef类型的结构体*/
+  GPIO_InitTypeDef GPIO_InitStructure;
+
+  RCC_AHB1PeriphClockCmd ( RCC_AHB1Periph_GPIOG, ENABLE); 							   
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;	
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;   
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; 
+  GPIO_Init(GPIOG, &GPIO_InitStructure);	
+  
+  GPIO_ResetBits(GPIOG,GPIO_Pin_9);  //禁用WiFi模块
+}
+
+//SD卡初始化函数
+
+u8 SDCard_Init(void)
+{
+	FATFS fs;					/* Work area (file system object) for logical drives */
+	FRESULT res_sd_conf; 
+	
+	/*禁用wifi模块*/
+	BL8782_PDN_INIT();
+	
+	//SD卡挂载
+	res_sd_conf = f_mount(&fs,"0:",1);  //挂载文件系统
+	
+	//如果没有文件系统，则要格式化，再挂载
+	if(res_sd_conf == FR_NO_FILESYSTEM)
+	{
+		printf("》SD卡还没有文件系统，即将进行格式化...\r\n");
+		/* 格式化 */
+		res_sd_conf=f_mkfs("0:",0,0);							
+		
+		if(res_sd_conf == FR_OK)
+		{
+			printf("》SD卡已成功格式化文件系统。\r\n");
+			/* 格式化后，先取消挂载 */
+			res_sd_conf = f_mount(NULL,"0:",1);			
+			/* 重新挂载	*/			
+			res_sd_conf = f_mount(&fs,"0:",1);
+		}
+		else
+		{
+			printf("《《格式化失败。》》\r\n");
+			return 0;	//SD卡挂载失败
+		}
+	}
+	else
+	{
+		printf("》SD卡挂载成功\r\n");
+	}
+	return 1;	//SD卡挂载成功
+}
+
 
 /**
   * @brief  主函数
   * @param  无
   * @retval 无
   */
-  
+
+extern  uint32_t CurrentFrameBuffer;
+
 int flag = 0;	//用于按键中断
+int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 
 	Debug_USART_Config();   
-	
-	My_RAM_TEST();	//先检查一下SDRAM是否正常,在USART1上有输出
 	
 	/* 配置SysTick 为1ms中断一次,时间到后触发定时中断，
 	*进入stm32fxx_it.c文件的SysTick_Handler处理，通过数中断次数计时
@@ -165,17 +257,75 @@ int main(void)
 	
 	SysTick_Init();		//用于延时函数
 	
+	My_RAM_TEST();
+	
 	EXTI_Key_Config();	//初始化外部中断按键
 
-	My_LCD_Init();		//初始化LCD
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+		
+		My_LCD_Init();		//初始化LCD（包括DMA2D初始化）
+		
+	#endif
 	
 	My_Camera_Init();	//初始化OV5640
 	
-	DMA2_Stream0_Init();	//缓存 -> 显存
-
+	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef LCD_DISPLAY
+			
+		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
+		
+	#endif
+	
+	SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
+	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{	
+		//全速更新
+		if(flag == 0)
+		{
+			Image_Process();	//图像处理函数，包括读图和写入显存
+		}
+		
+		
+		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
+		#ifdef LCD_DISPLAY
+			
+			//显示帧率，默认不显示		
+			#if FRAME_RATE_DISPLAY	
+			
+			if(Task_Delay[0]==0)
+			{
+							
+				LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
+
+				/*输出帧率*/
+	//			LCD_ClearLine(LINE(17));
+				sprintf((char*)dispBuf, "      ");
+				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+				sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
+				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+				
+				//重置
+				fps =0;
+				
+				Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
+			}
+				
+			#endif
+			
+		#endif
+		
+	}
+
+}
+
+
+
+
+/*********************************************END OF FILE**********************/
+
 //		//定时更新图像（用于测试）
 //		if(Task_Delay[1]==0 && flag == 0)
 //		{
@@ -185,38 +335,3 @@ int main(void)
 //			
 //			Task_Delay[1]=100; //此值每1ms会减1，减到0才可以重新进来这里
 //		}
-		
-		//全速更新
-		if(flag == 0)
-		{
-			Image_Process();	//图像处理函数，包括读图和写入显存
-		}
-		
-		//显示帧率，默认不显示		
-		#if FRAME_RATE_DISPLAY	
-		
-		if(Task_Delay[0]==0)
-		{
-						
-			LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
-
-			/*输出帧率*/
-//			LCD_ClearLine(LINE(17));
-			sprintf((char*)dispBuf, "      ");
-			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-			sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
-			LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-			
-			//重置
-			fps =0;
-			
-			Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
-		}
-			
-		#endif
-		
-	}
-
-}
-/*********************************************END OF FILE**********************/
-
