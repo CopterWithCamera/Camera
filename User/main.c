@@ -249,7 +249,8 @@ int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 
-	Debug_USART_Config();   
+	Debug_USART_Config();
+	USART2_Config();
 	
 	/* 配置SysTick 为1ms中断一次,时间到后触发定时中断，
 	*进入stm32fxx_it.c文件的SysTick_Handler处理，通过数中断次数计时

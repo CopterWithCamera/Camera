@@ -17,6 +17,49 @@
   
 #include "./usart/bsp_debug_usart.h"
 
+//配置USART2
+void USART2_Config(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  USART_InitTypeDef USART_InitStructure;
+		
+  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE);
+
+  /* 使能 UART 时钟 */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+  
+  /* 连接 PXx 到 USARTx_Tx*/
+  GPIO_PinAFConfig(GPIOA,GPIO_PinSource2, GPIO_AF_USART2);
+
+  /*  连接 PXx 到 USARTx__Rx*/
+  GPIO_PinAFConfig(GPIOA,GPIO_PinSource3,GPIO_AF_USART2);
+
+  /* 配置Tx引脚为复用功能  */
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;  
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  /* 配置Rx引脚为复用功能 */
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+			
+  /* 配置串DEBUG_USART 模式 */
+  USART_InitStructure.USART_BaudRate = 115200;
+  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+  USART_InitStructure.USART_StopBits = USART_StopBits_1;
+  USART_InitStructure.USART_Parity = USART_Parity_No ;
+  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+  USART_Init(USART2, &USART_InitStructure); 
+  USART_Cmd(USART2, ENABLE);
+}
+
+
  /**
   * @brief  DEBUG_USART GPIO 配置,工作模式配置。115200 8-N-1
   * @param  无

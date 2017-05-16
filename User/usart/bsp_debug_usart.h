@@ -28,6 +28,6 @@
 
 
 void Debug_USART_Config(void);
-//int fputc(int ch, FILE *f);
+void USART2_Config(void);
 
 #endif /* __USART1_H */

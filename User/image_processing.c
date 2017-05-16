@@ -177,11 +177,11 @@ void Usart_Display_Image(void)
 	
 	//发送包头
 	ch = 0x01;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0xFE;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	
 	//发送图像
 	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
@@ -189,17 +189,17 @@ void Usart_Display_Image(void)
 		ch = gray_array[i];
 		
 		//从串口发送1byte
-		USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-		while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+		USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	}
 	
 	//发送包尾
 	ch = 0xFE;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0x01;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 }
 
@@ -244,51 +244,51 @@ void Usart_Display_Wave(void)
 	
 	//发送包头
 	ch = 0x03;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0xFC;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 	//发送内容
 	
 	//发送通道一
 	float_char(length,a);
 	ch = a[0];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = a[1];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[2];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[3];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	
 	//发送通道二
 	float_char(speed,a);
 	ch = a[0];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = a[1];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[2];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[3];
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */		
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */		
 	
 	//发送包尾
 	ch = 0xFC;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0x03;
-	USART_SendData(DEBUG_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 	
 }
