@@ -134,36 +134,123 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 
 void Image_Fix(void)	//图像算法
 {
-	uint32_t i,j;
-	static float k = 0;
-
-	//灰度 --> 暂存
-	for(i = 1;i<=IMG_HEIGHT;i++)
+		uint32_t i,j,place,mid,start,end=0;
+float a,b,c,d,e,threhold,bias=0;
+	
+	
+	
+	for(i = 2;i<IMG_HEIGHT;i++)
 	{
-		for(j = 1;j<=IMG_WIDTH;j++)
+		for(j = 2;j<IMG_WIDTH;j++)
 		{
-			To_Temp(i,j,Get_Gray(i,j));
+			a=(Get_Gray(i-1,j-1)+Get_Gray(i,j-1)+Get_Gray(i+1,j-1))-(Get_Gray(i-1,j+1)+Get_Gray(i,j-1)+Get_Gray(i+1,j+1));
+			a=ABS(a);
+			b=(Get_Gray(i-1,j-1)+Get_Gray(i-1,j)+Get_Gray(i-1,j+1))-(Get_Gray(i+1,j-1)+Get_Gray(i+1,j)+Get_Gray(i+1,j+1));
+			b=ABS(b);
+			if (a>b)
+				{ c=a;}
+			else 
+				{c=b;}
+			To_Temp(i,j,c);
 		}
 	}
-	
-	//暂存 --> 灰度
-	for(i = 1;i<=IMG_HEIGHT;i++)
-	{
-		for(j = 1;j<=IMG_WIDTH;j++)
-		{
-			To_Gray(i,j,Get_Temp(i,j));
-		}
-	}
-	
-	k = k + 0.1f;
-	if(k >= 314)
-		k = 0;
-	
-	length = (float)sin((double)k) * 50.0f;
-	speed = (float)cos((double)k) * 50.0f;
-	
+
 
 	
+	//提取中线过程
+	// 最后一行确立前两点大小
+	if (Get_Temp(IMG_HEIGHT-1,1)>=Get_Temp(IMG_HEIGHT-1,2))
+		{c=Get_Temp(IMG_HEIGHT-1,1);
+		 d=Get_Temp(IMG_HEIGHT-1,2);}
+    else
+		{c=Get_Temp(IMG_HEIGHT-1,2);
+		 d=Get_Temp(IMG_HEIGHT-1,1);} //c取较大，d取较小
+		
+	//依次对比最后一行的大小，取最大最小两点
+		 for (i=2;i<=IMG_WIDTH;i++)
+		{
+	        if (Get_Temp(IMG_HEIGHT-1,i)<=d)
+			{d=Get_Temp(IMG_HEIGHT-1,i);}
+			if (Get_Temp(IMG_HEIGHT-1,i)>=c)
+			{c=Get_Temp(IMG_HEIGHT-1,i);}
+		}	
+		threhold=(c-d); //最后一行的阈值为（最大值-最小值）的四分之一
+		
+	for (i=1;i<=IMG_HEIGHT;i++)
+		{
+			for(j=1;j<=IMG_WIDTH;j++)
+			{
+				if(Get_Temp(i,j)<=(threhold/2))
+				{
+				To_Temp(i,j,0);
+				}
+				else
+				{
+				To_Temp(i,j,255);
+				}
+			}
+		}
+	
+			for(j=1;j<IMG_WIDTH;j++)
+			{
+			if ((Get_Temp(IMG_HEIGHT-1,j)-Get_Temp(IMG_HEIGHT-1,j+1))==255)
+				{
+				e=e+j;
+				mid=mid+1;
+				if(mid==2)
+					{
+						break;
+					}
+				}
+			}
+			place=(uint32_t)(e/2);			
+			
+			for(i=IMG_HEIGHT-2;i>2;i--)
+			{
+				for(j=place;j<IMG_WIDTH;j++)
+				{
+				if (Get_Temp(i,j)-Get_Temp(i,j+1)==255)
+					{
+					c=j;
+						break;
+					}
+				}
+				
+				for(j=place;j>1;j--)
+				{
+				if (Get_Temp(i,j)-Get_Temp(i,j-1)==255)
+					{
+					d=j;
+						break;
+					}
+				}
+				
+				place=(uint32_t)((c+d)/2);
+				for (j=2;j<IMG_WIDTH;j++)
+				{
+				if(j==place)
+					{
+						To_Gray(i,j,255);
+					}
+				else
+					{
+						To_Gray(i,j,0);
+					}
+					if(i==(IMG_HEIGHT/2))
+						{if (j==(IMG_WIDTH/2))
+							{bias=place;}
+						}
+					if(i==IMG_HEIGHT-2)
+						{a=place;}
+					if(i==(IMG_HEIGHT-2))
+						{a=place;}
+					if(i==3)
+						{b=place;}
+				}
+				
+			}
+			length=(float)(bias-(IMG_WIDTH/2));
+			speed=atan((b-a)/(IMG_HEIGHT-5))*(180/3.14);
 }
 
 
