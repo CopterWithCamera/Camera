@@ -177,11 +177,11 @@ void Usart_Display_Image(void)
 	
 	//发送包头
 	ch = 0x01;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0xFE;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	
 	//发送图像
 	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
@@ -189,17 +189,17 @@ void Usart_Display_Image(void)
 		ch = gray_array[i];
 		
 		//从串口发送1byte
-		USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-		while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+		USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	}
 	
 	//发送包尾
 	ch = 0xFE;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0x01;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 }
 
@@ -244,51 +244,51 @@ void Usart_Display_Wave(void)
 	
 	//发送包头
 	ch = 0x03;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0xFC;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 	//发送内容
 	
 	//发送通道一
 	float_char(length,a);
 	ch = a[0];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = a[1];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[2];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[3];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	
 	//发送通道二
 	float_char(speed,a);
 	ch = a[0];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = a[1];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[2];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
 	ch = a[3];
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */		
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */		
 	
 	//发送包尾
 	ch = 0xFC;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	ch = 0x03;
-	USART_SendData(USART2, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	
 	
 }
@@ -318,39 +318,39 @@ void Camera_Buffer_To_Lcd_Buffer(void)
 
 void DMA_AtoB_Config(uint32_t DMA_Memory_A_Addr,uint32_t DMA_Memory_B_Addr)
 {
-  DMA_InitTypeDef  DMA_InitStructure;
-  
-  /* 使能DMA时钟 */
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-  /* 复位初始化DMA数据流 */
-  DMA_DeInit(DMA2_Stream0);
-  /* 确保DMA数据流复位完成 */
-  while (DMA_GetCmdStatus(DMA2_Stream0) != DISABLE){}
+	DMA_InitTypeDef  DMA_InitStructure;
 
-  DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
-  DMA_InitStructure.DMA_PeripheralBaseAddr = DMA_Memory_A_Addr;
-  DMA_InitStructure.DMA_Memory0BaseAddr = DMA_Memory_B_Addr;
-  DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToMemory;
-  DMA_InitStructure.DMA_BufferSize = IMG_WIDTH;
-  DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Enable;
-  DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-  DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-  DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh ;
-  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;     
-  DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-  DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC8;
-  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	/* 使能DMA时钟 */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+	/* 复位初始化DMA数据流 */
+	DMA_DeInit(DMA2_Stream0);
+	/* 确保DMA数据流复位完成 */
+	while (DMA_GetCmdStatus(DMA2_Stream0) != DISABLE){}
 
-  DMA_Init(DMA2_Stream0, &DMA_InitStructure); 
+	DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
+	DMA_InitStructure.DMA_PeripheralBaseAddr = DMA_Memory_A_Addr;
+	DMA_InitStructure.DMA_Memory0BaseAddr = DMA_Memory_B_Addr;
+	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToMemory;
+	DMA_InitStructure.DMA_BufferSize = IMG_WIDTH;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Enable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh ;
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;     
+	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC8;
+	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+
+	DMA_Init(DMA2_Stream0, &DMA_InitStructure); 
 		
-  DMA_ClearFlag(DMA2_Stream0,DMA_FLAG_TCIF0);
+	DMA_ClearFlag(DMA2_Stream0,DMA_FLAG_TCIF0);
 		
-  DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 
+	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 
 		
-  DMA_Cmd(DMA2_Stream0, ENABLE);
-  while(DMA_GetCmdStatus(DMA2_Stream1) != ENABLE){}
+	DMA_Cmd(DMA2_Stream0, ENABLE);
+	while(DMA_GetCmdStatus(DMA2_Stream1) != ENABLE){}
   
 }
 
