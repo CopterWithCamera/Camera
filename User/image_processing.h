@@ -9,6 +9,8 @@
 #include "./lcd/bsp_lcd.h"
 
 
+#define ABS(x) ( (x)>0?(x):-(x) )
+
 //#define	IMG_WIDTH						800
 //#define	IMG_HEIGHT						480
 #define	IMG_WIDTH						80
