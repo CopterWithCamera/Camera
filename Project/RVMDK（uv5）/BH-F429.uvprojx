@@ -694,11 +694,6 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\key\bsp_exti.c</FilePath>
             </File>
-            <File>
-              <FileName>mymath.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\math\mymath.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
