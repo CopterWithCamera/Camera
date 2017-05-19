@@ -29,6 +29,7 @@
 #include "image_processing.h"
 #include "ff.h"
 #include "rgbTObmp.h"
+#include "bsp_spi_nrf.h"
 
 //LCD显存（定义在最前边能够消除DMA2D工作不正常错误）
 uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;
@@ -249,6 +250,8 @@ int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 
+	int a;
+	
 	Debug_USART_Config();
 	USART2_Config();
 	
@@ -261,6 +264,18 @@ int main(void)
 	My_RAM_TEST();
 	
 	EXTI_Key_Config();	//初始化外部中断按键
+	
+	//NRF24L01
+	SPI_NRF_Init();
+	if(NRF_Check() != 0)
+	{
+		printf("成功，a=%d\n",a);
+		NRF_TX_Mode();				//设置为发送模式
+	}
+	else
+	{
+		printf("NRF24L01初始化失败！\r\n");
+	}
 
 	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
 	#ifdef LCD_DISPLAY

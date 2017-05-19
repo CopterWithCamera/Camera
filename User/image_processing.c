@@ -2,6 +2,7 @@
 #include "./usart/bsp_debug_usart.h"
 #include "math.h"
 #include "rgbTObmp.h"
+#include "bsp_spi_nrf.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -290,12 +291,11 @@ void Usart_Display_Image(void)
 	
 }
 
-
 //从串口显示矩阵，直接用串口调试助手查看
 void Usart_Display_Matrix(void)
 {
 	uint32_t i,j;
-	uint8_t ch;
+	uint8_t ch,tmp;
 	
 	//发送图像
 	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
@@ -304,11 +304,60 @@ void Usart_Display_Matrix(void)
 		{
 			ch = gray_array[i];
 		
-			printf("%03d ",ch);	//强制显示三位数，前面补0
+			tmp = ch/100;
+			tmp = tmp + 0x30;	//转ASCII码
+			USART_SendData(DATA_OUT_USART, tmp);		/* 发送一个字节数据到串口DEBUG_USART */
+			while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+			
+			tmp = ch/10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			USART_SendData(DATA_OUT_USART, tmp);		/* 发送一个字节数据到串口DEBUG_USART */
+			while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+			
+			tmp = ch%10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			USART_SendData(DATA_OUT_USART, tmp);		/* 发送一个字节数据到串口DEBUG_USART */
+			while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+			
+			tmp = ',';
+			USART_SendData(DATA_OUT_USART, tmp);		/* 发送一个字节数据到串口DEBUG_USART */
+			while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+			
 		}
-		printf("\r\n");	//每行结束回车
+		ch = '\r';
+		USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+		ch = '\n';
+		USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 	}
-	printf("\r\n\r\n\r\n\r\n");	//全部发送结束后空4行
+	
+	ch = '\r';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\n';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\r';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\n';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\r';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\n';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\r';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	ch = '\n';
+	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
+	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
 }
 
 //float转4个unsigned char
@@ -379,6 +428,138 @@ void Usart_Display_Wave(void)
 	
 	
 }
+
+//******************** NRF24L01输出 ********************************************************************
+
+//从串口显示图像，配合山外多功能调试助手
+void NRF_Display_Image(void)
+{
+	uint32_t i;
+	uint8_t ch;
+	
+	//发送包头
+	ch = 0x01;
+	NRF_Send(ch);
+	
+	ch = 0xFE;
+	NRF_Send(ch);
+	
+	//发送图像
+	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
+	{		
+		ch = gray_array[i];
+		
+		//从NRF发送1byte
+		NRF_Send(ch);
+	}
+	
+	//发送包尾
+	ch = 0xFE;
+	NRF_Send(ch);
+	
+	ch = 0x01;
+	NRF_Send(ch);
+	
+}
+
+//从串口显示矩阵，直接用串口调试助手查看
+void NRF_Display_Matrix(void)
+{
+	uint32_t i,j;
+	uint8_t ch,tmp;
+	
+	//发送图像
+	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
+	{
+		for(j = 0;j<IMG_WIDTH;j++)	//列扫描
+		{
+			ch = gray_array[i];
+		
+			tmp = ch/100;
+			tmp = tmp + 0x30;	//转ASCII码
+			NRF_Send(tmp);
+			
+			tmp = ch/10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			NRF_Send(tmp);
+			
+			tmp = ch%10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			NRF_Send(tmp);
+			
+			tmp = ',';
+			NRF_Send(tmp);
+			
+		}
+		ch = '\r';
+		NRF_Send(ch);
+		ch = '\n';
+		NRF_Send(ch);
+	}
+	
+	ch = '\r';
+	NRF_Send(ch);
+	ch = '\n';
+	NRF_Send(ch);
+	ch = '\r';
+	NRF_Send(ch);
+	ch = '\n';
+	NRF_Send(ch);
+	ch = '\r';
+	NRF_Send(ch);
+	ch = '\n';
+	NRF_Send(ch);
+	ch = '\r';
+	NRF_Send(ch);
+	ch = '\n';
+	NRF_Send(ch);
+}
+
+//串口输出波形（length和speed），用山外多功能调试助手查看
+void NRF_Display_Wave(void)
+{
+	uint8_t ch;
+	unsigned char a[4];
+	
+	//发送包头
+	ch = 0x03;
+	NRF_Send(ch);
+	ch = 0xFC;
+	NRF_Send(ch);
+	
+	//发送内容
+	
+	//发送通道一
+	float_char(length,a);
+	ch = a[0];
+	NRF_Send(ch);
+	ch = a[1];
+	NRF_Send(ch);
+	ch = a[2];
+	NRF_Send(ch);
+	ch = a[3];
+	NRF_Send(ch);
+	
+	//发送通道二
+	float_char(speed,a);
+	ch = a[0];
+	NRF_Send(ch);
+	ch = a[1];
+	NRF_Send(ch);
+	ch = a[2];
+	NRF_Send(ch);
+	ch = a[3];
+	NRF_Send(ch);
+	
+	//发送包尾
+	ch = 0xFC;
+	NRF_Send(ch);
+	ch = 0x03;
+	NRF_Send(ch);	
+}
+
 
 //******************** LCD显示内容 *********************************************************************
 
@@ -570,13 +751,11 @@ void Image_Process(void)
 	Task_Delay[9] = 1000;
 	while(Task_Delay[9]!=0 && image_updata_flag == 0){}
 	
-//	//老写法
-//	Delay(150);	//加150ms延迟，确保DMA2已经完成从DCMI读到显存中
-	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
 	Creat_LCD();	//还原RGB565图像，存入显示缓存
-		
+	
+	//串口输出信息
 	#if defined(__USART_DISPLAY_IMAGE)
 		
 	Usart_Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
@@ -591,6 +770,20 @@ void Image_Process(void)
 	
 	#endif
 	
+	//NRF输出信息
+	#if defined(__NRF_DISPLAY_IMAGE)
+		
+	NRF_Display_Image();	//从NRF输出图像，配合山外多功能调试助手显示
+		
+	#elif defined(__NRF_DISPLAY_MATRIX)
+	
+	NRF_Display_Matrix();	//从NRF输出矩阵
+		
+	#elif defined(__NRF_DISPALY_WAVE)
+	
+	NRF_Display_Wave();	//NRF输出波形
+	
+	#endif
 	
 	
 	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
