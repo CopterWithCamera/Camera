@@ -11,36 +11,39 @@
 #define __EXRAM  __attribute__ ((section ("EXRAM")))
 
 
+//输出串口选择
+#define DEBUG_USART			USART1
+#define DATA_OUT_USART		USART2
+
+
 //************ 功能开关 ***************
 
 //帧率显示
 #define FRAME_RATE_DISPLAY 		1
 
+//============================
 //LCD显示
-#define LCD_DISPLAY
+#define __LCD_DISPLAY
 
-//图像传输方式选择（只能使能一个）
-
-//串口：
-//#define __USART_DISPLAY_IMAGE	//显示图像
-//#define __USART_DISPLAY_MATRIX	//显示矩阵
-#define __USART_DISPALY_WAVE	//显示波形
-
-//NRF34L01：
-//#define __NRF_DISPLAY_IMAGE	//显示图像
-//#define __NRF_DISPLAY_MATRIX	//显示矩阵
-#define __NRF_DISPALY_WAVE	//显示波形
-
+//显示内容
 #define __DISPALY_DATA
 #define __DISPALY_GRAPH
 
-//数据输出端口选择
-#define DATA_OUT_USART		USART2
+//============================
+//图像传输
 
+#define __USART_DISPLAY
+#define __NRF_DISPLAY
+
+//显示内容（只能选择一个）：
+//#define __DISPLAY_IMAGE	//显示图像
+//#define __DISPLAY_MATRIX	//显示矩阵
+#define __DISPALY_WAVE	//显示波形
 
 //*************************************
 
 extern uint8_t dispBuf[100];
 extern int SD_State;
+extern float fps;
 
 #endif /* __INCLUDE_H */
