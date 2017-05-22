@@ -34,6 +34,7 @@
 	\*																*/
 
 #include "bsp_spi_nrf.h"
+#include "stdio.h"
 
 u8 RX_BUF[RX_PLOAD_WIDTH];		//接收数据缓存
 u8 TX_BUF[TX_PLOAD_WIDTH];		//发射数据缓存
@@ -426,11 +427,18 @@ u8 NRF_Rx_Dat(u8 *rxbuf)
 uint8_t NRF_Send_Counter = 0;
 u8 NRF_Send(u8 Data)
 {
+	u8 status = 0;
+	u8 send_counter = 0;
+	
 	TX_BUF[NRF_Send_Counter] = Data;	//存入发送数组
 	NRF_Send_Counter++;
 	
-	if(NRF_Send_Counter>TX_PLOAD_WIDTH)	//发送缓冲区满
-	{
+	if(NRF_Send_Counter>=TX_PLOAD_WIDTH)	//发送缓冲区满
+	{		
+		//清零计数器
+		NRF_Send_Counter = 0;
+		
+		//进入发送流程
 		
 		/*
 			#define MAX_RT      0x10 //达到最大重发次数中断标志位
@@ -438,10 +446,36 @@ u8 NRF_Send(u8 Data)
 			#define RX_DR		0x40 //接收到数据中断标志位
 		*/
 		
-		NRF_Send_Counter = 0;
-		return NRF_Tx_Dat(TX_BUF);
+		send_counter = 20;
+		while(send_counter>0)
+		{
+			send_counter--;
+			status = NRF_Tx_Dat(TX_BUF);	//发送数据，获取发送状态
+			
+			if(status == TX_DS)
+				return 1;	//发送成功
+		}
 		
+		printf("发送失败！");
+		return 2;	//发送失败
 	}
 	return 0;	//发送缓冲区未满
 }
 /*********************************************END OF FILE**********************/
+
+///*判断发送状态*/
+//switch(status)
+//{
+//	case MAX_RT:
+//		printf("\r\n 主机端 没接收到应答信号，发送次数超过限定值，发送失败。 \r\n");
+//		break;
+
+//	case ERROR:
+//		printf("\r\n 未知原因导致发送失败。 \r\n");
+//		break;
+
+//	case TX_DS:
+//		printf("\r\n 主机端 接收到 从机端 的应答信号，发送成功！ \r\n");	 		
+//		break;  								
+//}
+

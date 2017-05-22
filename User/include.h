@@ -23,22 +23,22 @@
 
 //============================
 //LCD显示
-#define __LCD_DISPLAY
+//#define __LCD_DISPLAY
 
 //显示内容
-#define __DISPALY_DATA
-#define __DISPALY_GRAPH
+//#define __DISPALY_DATA
+//#define __DISPALY_GRAPH
 
 //============================
 //图像传输
 
-#define __USART_DISPLAY
+//#define __USART_DISPLAY
 #define __NRF_DISPLAY
 
 //显示内容（只能选择一个）：
-//#define __DISPLAY_IMAGE	//显示图像
+#define __DISPLAY_IMAGE	//显示图像
 //#define __DISPLAY_MATRIX	//显示矩阵
-#define __DISPALY_WAVE	//显示波形
+//#define __DISPALY_WAVE	//显示波形
 
 //*************************************
 
