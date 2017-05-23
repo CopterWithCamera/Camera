@@ -171,11 +171,11 @@ void SysTick_Handler(void)
 
 extern uint16_t lcd_width, lcd_height;
 extern uint16_t img_width, img_height;
-extern uint8_t fps;
+extern uint8_t fps_temp;
 
 
-//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef LCD_DISPLAY
+//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef __LCD_DISPLAY
 
 //缓存 --> 显存
 uint16_t line_num0 =1;
@@ -236,16 +236,13 @@ void DCMI_IRQHandler(void)
 		/*传输完一帧，计数复位*/
 		line_num=0;
 		
-		#if FRAME_RATE_DISPLAY	
-		fps++; //帧率计数
-		#endif
+		fps_temp++; //帧率计数
 		
 		image_updata_flag = 1;	//表示一帧图像已经全部存入缓存
 		
 		DCMI_ClearITPendingBit(DCMI_IT_FRAME); 
 	}
 }
-
 
 
 extern int flag;

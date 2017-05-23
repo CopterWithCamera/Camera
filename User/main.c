@@ -29,6 +29,7 @@
 #include "image_processing.h"
 #include "ff.h"
 #include "rgbTObmp.h"
+#include "bsp_spi_nrf.h"
 
 //LCD显存（定义在最前边能够消除DMA2D工作不正常错误）
 uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;
@@ -39,12 +40,13 @@ uint32_t Task_Delay[NumOfTask];
 uint8_t dispBuf[100];
 OV5640_IDTypeDef OV5640_Camera_ID;
 
-uint8_t fps=0;
+uint8_t fps_temp = 0;
+float fps = 0;
 
 void My_Camera_Init(void)
 {
-//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef LCD_DISPLAY
+//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef __LCD_DISPLAY
 	
 	printf("\r\nSTM32F429 DCMI 驱动OV5640例程\r\n");
 	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640图像处理测试，硬件版本：旧版F429");
@@ -62,12 +64,11 @@ void My_Camera_Init(void)
 //		sprintf((char*)dispBuf, "              OV5640 摄像头,ID:0x%x", OV5640_Camera_ID.PIDH);
 //		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*)dispBuf);
 		CAMERA_DEBUG("%x %x\r\n",OV5640_Camera_ID.PIDH ,OV5640_Camera_ID.PIDL);
-
 	}
 	else
 	{
-		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-		#ifdef LCD_DISPLAY
+		//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+		#ifdef __LCD_DISPLAY
 		
 		LCD_SetTextColor(LCD_COLOR_RED);
 		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*) "         没有检测到OV5640，请重新检查连接。");
@@ -248,7 +249,7 @@ int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
-
+	
 	Debug_USART_Config();
 	USART2_Config();
 	
@@ -261,9 +262,21 @@ int main(void)
 	My_RAM_TEST();
 	
 	EXTI_Key_Config();	//初始化外部中断按键
+	
+	//NRF24L01
+	SPI_NRF_Init();
+	if(NRF_Check() != 0)
+	{
+		printf("NRF初始化成功！\r\n");
+		NRF_TX_Mode();				//设置为发送模式
+	}
+	else
+	{
+		printf("NRF24L01初始化失败！\r\n");
+	}
 
-	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-	#ifdef LCD_DISPLAY
+	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef __LCD_DISPLAY
 		
 		My_LCD_Init();		//初始化LCD（包括DMA2D初始化）
 		
@@ -271,8 +284,8 @@ int main(void)
 	
 	My_Camera_Init();	//初始化OV5640
 	
-	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-	#ifdef LCD_DISPLAY
+	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+	#ifdef __LCD_DISPLAY
 			
 		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
 		
@@ -282,44 +295,36 @@ int main(void)
 	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
-	{	
+	{
 		//全速更新
 		if(flag == 0)
 		{
 			Image_Process();	//图像处理函数，包括读图和写入显存
 		}
 		
-		
-		//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-		#ifdef LCD_DISPLAY
+		//波特率计算
+		if(Task_Delay[0]==0)
+		{
+			Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
 			
-			//显示帧率，默认不显示		
-			#if FRAME_RATE_DISPLAY	
+			fps = fps_temp/5.0f;
+			fps_temp =0;	//重置
 			
-			if(Task_Delay[0]==0)
-			{
-							
-				LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
-
-				/*输出帧率*/
-	//			LCD_ClearLine(LINE(17));
-				sprintf((char*)dispBuf, "      ");
-				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-				sprintf((char*)dispBuf, " %.1f/s", (float)(fps/5.0));
-				LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+			#ifdef __LCD_DISPLAY
+				#if FRAME_RATE_DISPLAY	//显示帧率，默认不显示	
 				
-				//重置
-				fps =0;
+					/*输出帧率*/
+					LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
+					sprintf((char*)dispBuf, "      ");
+					LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
+					sprintf((char*)dispBuf, " %.1f/s", fps);
+					LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
 				
-				Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
-			}
-				
+				#endif
 			#endif
 			
-		#endif
-		
+		}
 	}
-
 }
 
 

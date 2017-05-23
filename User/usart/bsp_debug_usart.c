@@ -16,6 +16,7 @@
   */ 
   
 #include "./usart/bsp_debug_usart.h"
+#include "include.h"
 
 //≈‰÷√USART2
 void USART2_Config(void)

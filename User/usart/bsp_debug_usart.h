@@ -8,7 +8,7 @@
 //#define USART1_DR_Base  0x40013804		// 0x40013800 + 0x04 = 0x40013804
 //#define SENDBUFF_SIZE   5000
 
-#define DEBUG_USART                             USART1
+//#define DEBUG_USART                             USART1
 #define DEBUG_USART_CLK                         RCC_APB2Periph_USART1
 #define DEBUG_USART_BAUDRATE                    115200
 

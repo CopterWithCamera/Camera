@@ -2,6 +2,7 @@
 #include "./usart/bsp_debug_usart.h"
 #include "math.h"
 #include "rgbTObmp.h"
+#include "bsp_spi_nrf.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -34,6 +35,19 @@ uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
 float length;	//偏差
 float speed;
 
+void Data_Output(u8 ch)
+{
+	#ifdef __USART_DISPLAY
+		//串口发送
+		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	#endif
+	
+	#ifdef __NRF_DISPLAY
+		//NRF发送
+		NRF_Send(ch);
+	#endif
+}
 
 //所有取数据的函数以Get开头
 //所有存数据的函数以To开头
@@ -134,168 +148,163 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 
 void Image_Fix(void)	//图像算法
 {
-		uint32_t i,j,place,mid,start,end=0;
-float a,b,c,d,e,threhold,bias=0;
-	
-	
-	
-	for(i = 2;i<IMG_HEIGHT;i++)
-	{
-		for(j = 2;j<IMG_WIDTH;j++)
-		{
-			a=(Get_Gray(i-1,j-1)+Get_Gray(i,j-1)+Get_Gray(i+1,j-1))-(Get_Gray(i-1,j+1)+Get_Gray(i,j-1)+Get_Gray(i+1,j+1));
-			a=ABS(a);
-			b=(Get_Gray(i-1,j-1)+Get_Gray(i-1,j)+Get_Gray(i-1,j+1))-(Get_Gray(i+1,j-1)+Get_Gray(i+1,j)+Get_Gray(i+1,j+1));
-			b=ABS(b);
-			if (a>b)
-				{ c=a;}
-			else 
-				{c=b;}
-			To_Temp(i,j,c);
-		}
-	}
+//	uint32_t i,j,place,mid,start,end=0;
+//	float a,b,c,d,e,threhold,bias=0;
+//	
+//	
+//	
+//	for(i = 2;i<IMG_HEIGHT;i++)
+//	{
+//		for(j = 2;j<IMG_WIDTH;j++)
+//		{
+//			a=(Get_Gray(i-1,j-1)+Get_Gray(i,j-1)+Get_Gray(i+1,j-1))-(Get_Gray(i-1,j+1)+Get_Gray(i,j-1)+Get_Gray(i+1,j+1));
+//			a=ABS(a);
+//			b=(Get_Gray(i-1,j-1)+Get_Gray(i-1,j)+Get_Gray(i-1,j+1))-(Get_Gray(i+1,j-1)+Get_Gray(i+1,j)+Get_Gray(i+1,j+1));
+//			b=ABS(b);
+//			if (a>b)
+//				{ c=a;}
+//			else 
+//				{c=b;}
+//			To_Temp(i,j,c);
+//		}
+//	}
 
 
-	
-	//提取中线过程
-	// 最后一行确立前两点大小
-	if (Get_Temp(IMG_HEIGHT-1,1)>=Get_Temp(IMG_HEIGHT-1,2))
-		{c=Get_Temp(IMG_HEIGHT-1,1);
-		 d=Get_Temp(IMG_HEIGHT-1,2);}
-    else
-		{c=Get_Temp(IMG_HEIGHT-1,2);
-		 d=Get_Temp(IMG_HEIGHT-1,1);} //c取较大，d取较小
-		
-	//依次对比最后一行的大小，取最大最小两点
-		 for (i=2;i<=IMG_WIDTH;i++)
-		{
-	        if (Get_Temp(IMG_HEIGHT-1,i)<=d)
-			{d=Get_Temp(IMG_HEIGHT-1,i);}
-			if (Get_Temp(IMG_HEIGHT-1,i)>=c)
-			{c=Get_Temp(IMG_HEIGHT-1,i);}
-		}	
-		threhold=(c-d); //最后一行的阈值为（最大值-最小值）的四分之一
-		
-	for (i=1;i<=IMG_HEIGHT;i++)
-		{
-			for(j=1;j<=IMG_WIDTH;j++)
-			{
-				if(Get_Temp(i,j)<=(threhold/2))
-				{
-				To_Temp(i,j,0);
-				}
-				else
-				{
-				To_Temp(i,j,255);
-				}
-			}
-		}
-	
-			for(j=1;j<IMG_WIDTH;j++)
-			{
-			if ((Get_Temp(IMG_HEIGHT-1,j)-Get_Temp(IMG_HEIGHT-1,j+1))==255)
-				{
-				e=e+j;
-				mid=mid+1;
-				if(mid==2)
-					{
-						break;
-					}
-				}
-			}
-			place=(uint32_t)(e/2);			
-			
-			for(i=IMG_HEIGHT-2;i>2;i--)
-			{
-				for(j=place;j<IMG_WIDTH;j++)
-				{
-				if (Get_Temp(i,j)-Get_Temp(i,j+1)==255)
-					{
-					c=j;
-						break;
-					}
-				}
-				
-				for(j=place;j>1;j--)
-				{
-				if (Get_Temp(i,j)-Get_Temp(i,j-1)==255)
-					{
-					d=j;
-						break;
-					}
-				}
-				
-				place=(uint32_t)((c+d)/2);
-				for (j=2;j<IMG_WIDTH;j++)
-				{
-				if(j==place)
-					{
-						To_Gray(i,j,255);
-					}
-				else
-					{
-						To_Gray(i,j,0);
-					}
-					if(i==(IMG_HEIGHT/2))
-						{if (j==(IMG_WIDTH/2))
-							{bias=place;}
-						}
-					if(i==IMG_HEIGHT-2)
-						{a=place;}
-					if(i==(IMG_HEIGHT-2))
-						{a=place;}
-					if(i==3)
-						{b=place;}
-				}
-				
-			}
-			length=(float)(bias-(IMG_WIDTH/2));
-			speed=atan((b-a)/(IMG_HEIGHT-5))*(180/3.14);
+//	
+//	//提取中线过程
+//	// 最后一行确立前两点大小
+//	if (Get_Temp(IMG_HEIGHT-1,1)>=Get_Temp(IMG_HEIGHT-1,2))
+//		{c=Get_Temp(IMG_HEIGHT-1,1);
+//		 d=Get_Temp(IMG_HEIGHT-1,2);}
+//    else
+//		{c=Get_Temp(IMG_HEIGHT-1,2);
+//		 d=Get_Temp(IMG_HEIGHT-1,1);} //c取较大，d取较小
+//		
+//	//依次对比最后一行的大小，取最大最小两点
+//		 for (i=2;i<=IMG_WIDTH;i++)
+//		{
+//	        if (Get_Temp(IMG_HEIGHT-1,i)<=d)
+//			{d=Get_Temp(IMG_HEIGHT-1,i);}
+//			if (Get_Temp(IMG_HEIGHT-1,i)>=c)
+//			{c=Get_Temp(IMG_HEIGHT-1,i);}
+//		}	
+//		threhold=(c-d); //最后一行的阈值为（最大值-最小值）的四分之一
+//		
+//	for (i=1;i<=IMG_HEIGHT;i++)
+//		{
+//			for(j=1;j<=IMG_WIDTH;j++)
+//			{
+//				if(Get_Temp(i,j)<=(threhold/2))
+//				{
+//				To_Temp(i,j,0);
+//				}
+//				else
+//				{
+//				To_Temp(i,j,255);
+//				}
+//			}
+//		}
+//	
+//			for(j=1;j<IMG_WIDTH;j++)
+//			{
+//			if ((Get_Temp(IMG_HEIGHT-1,j)-Get_Temp(IMG_HEIGHT-1,j+1))==255)
+//				{
+//				e=e+j;
+//				mid=mid+1;
+//				if(mid==2)
+//					{
+//						break;
+//					}
+//				}
+//			}
+//			place=(uint32_t)(e/2);			
+//			
+//			for(i=IMG_HEIGHT-2;i>2;i--)
+//			{
+//				for(j=place;j<IMG_WIDTH;j++)
+//				{
+//				if (Get_Temp(i,j)-Get_Temp(i,j+1)==255)
+//					{
+//					c=j;
+//						break;
+//					}
+//				}
+//				
+//				for(j=place;j>1;j--)
+//				{
+//				if (Get_Temp(i,j)-Get_Temp(i,j-1)==255)
+//					{
+//					d=j;
+//						break;
+//					}
+//				}
+//				
+//				place=(uint32_t)((c+d)/2);
+//				for (j=2;j<IMG_WIDTH;j++)
+//				{
+//				if(j==place)
+//					{
+//						To_Gray(i,j,255);
+//					}
+//				else
+//					{
+//						To_Gray(i,j,0);
+//					}
+//					if(i==(IMG_HEIGHT/2))
+//						{if (j==(IMG_WIDTH/2))
+//							{bias=place;}
+//						}
+//					if(i==IMG_HEIGHT-2)
+//						{a=place;}
+//					if(i==(IMG_HEIGHT-2))
+//						{a=place;}
+//					if(i==3)
+//						{b=place;}
+//				}
+//				
+//			}
+//			length=(float)(bias-(IMG_WIDTH/2));
+//			speed=atan((b-a)/(IMG_HEIGHT-5))*(180/3.14);
 }
 
 
-//************** 串口输出信息 ************************************************
+//************** 输出信息 ************************************************
 
-//从串口显示图像，配合山外多功能调试助手
-void Usart_Display_Image(void)
+//显示图像，配合山外多功能调试助手
+void Display_Image(void)
 {
 	uint32_t i;
 	uint8_t ch;
 	
 	//发送包头
 	ch = 0x01;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
+
 	ch = 0xFE;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);
+
 	
 	//发送图像
 	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
 	{		
 		ch = gray_array[i];
-		
-		//从串口发送1byte
-		USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+		Data_Output(ch);
 	}
 	
 	//发送包尾
 	ch = 0xFE;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
+	
 	ch = 0x01;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	
 }
 
-
-//从串口显示矩阵，直接用串口调试助手查看
-void Usart_Display_Matrix(void)
+//显示矩阵，直接用串口调试助手查看
+void Display_Matrix(void)
 {
 	uint32_t i,j;
-	uint8_t ch;
+	uint8_t ch,tmp;
 	
 	//发送图像
 	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
@@ -304,11 +313,33 @@ void Usart_Display_Matrix(void)
 		{
 			ch = gray_array[i];
 		
-			printf("%03d ",ch);	//强制显示三位数，前面补0
+			tmp = ch/100;
+			tmp = tmp + 0x30;	//转ASCII码
+			Data_Output(tmp);
+			
+			tmp = ch/10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			Data_Output(tmp);
+			
+			tmp = ch%10;
+			tmp = tmp%10;
+			tmp = tmp + 0x30;	//转ASCII码
+			Data_Output(tmp);
+			
+			tmp = ',';
+			Data_Output(tmp);
+			
 		}
-		printf("\r\n");	//每行结束回车
+		ch = '\r';Data_Output(ch);
+		ch = '\n';Data_Output(ch);
 	}
-	printf("\r\n\r\n\r\n\r\n");	//全部发送结束后空4行
+	
+	ch = '\r';Data_Output(ch);
+	ch = '\n';Data_Output(ch);
+	
+	ch = '\r';Data_Output(ch);
+	ch = '\n';Data_Output(ch);
 }
 
 //float转4个unsigned char
@@ -323,67 +354,56 @@ void float_char(float f,unsigned char *s)
     *(s+3) = *(p+3);
 }
 
-//串口输出波形（length和speed），用山外多功能调试助手查看
-void Usart_Display_Wave(void)
+//输出波形（length和speed），用山外多功能调试助手查看
+void Display_Wave(void)
 {
 	uint8_t ch;
 	unsigned char a[4];
 	
 	//发送包头
 	ch = 0x03;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	ch = 0xFC;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	
 	//发送内容
 	
 	//发送通道一
 	float_char(length,a);
 	ch = a[0];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	ch = a[1];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);
 	ch = a[2];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);	
 	ch = a[3];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);
 	
 	//发送通道二
 	float_char(speed,a);
 	ch = a[0];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	ch = a[1];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);
 	ch = a[2];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */	
+	Data_Output(ch);
 	ch = a[3];
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */		
+	Data_Output(ch);		
 	
 	//发送包尾
 	ch = 0xFC;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	ch = 0x03;
-	USART_SendData(DATA_OUT_USART, ch);		/* 发送一个字节数据到串口DEBUG_USART */
-	while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	Data_Output(ch);
 	
 	
 }
 
+
 //******************** LCD显示内容 *********************************************************************
 
-//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef LCD_DISPLAY
+//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
+#ifdef __LCD_DISPLAY
 
 //非DMA方式显示
 void Camera_Buffer_To_Lcd_Buffer(void)
@@ -557,66 +577,70 @@ void Draw_Graph()
 
 #endif
 
+void Image_Output(void)
+{
+	//*******************************************************************
+	//输出信息
+	#if defined(__DISPLAY_IMAGE)
+		
+		Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+		
+	#elif defined(__DISPLAY_MATRIX)
+	
+		Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+		
+	#elif defined(__DISPALY_WAVE)
+	
+		Display_Wave();	//串口输出波形
+	
+	#endif
+	
+	//*******************************************************************
+	//LCD显示
+	#ifdef __LCD_DISPLAY
+	
+		#if defined(__DISPALY_DATA)
+		
+			Display_data();	//显示偏移距离和水平速度
+		
+		#endif
+		
+		#if defined(__DISPALY_GRAPH)
+		
+			Draw_Graph();	//绘制图形曲线
+		
+		#endif
+	
+		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
+	
+	#endif
+	
+	//*******************************************************************
+	//SD存图
+	if(SD_State)	//如果SD卡挂载成功
+	{
+		TO_SDcard();      //SD卡
+	}
+}
+
 //*********************** 总执行函数 **********************************************
 
 uint8_t image_updata_flag = 0;
 void Image_Process(void)
 {
 	DCMI_CaptureCmd(ENABLE);			//读取一帧图像到缓存
-	
+
 	//新写法
 	//延时1s 或 图像采集完成中断置位
 	image_updata_flag = 0;
 	Task_Delay[9] = 1000;
 	while(Task_Delay[9]!=0 && image_updata_flag == 0){}
 	
-//	//老写法
-//	Delay(150);	//加150ms延迟，确保DMA2已经完成从DCMI读到显存中
-	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
 	Creat_LCD();	//还原RGB565图像，存入显示缓存
-		
-	#if defined(__USART_DISPLAY_IMAGE)
-		
-	Usart_Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
-		
-	#elif defined(__USART_DISPLAY_MATRIX)
 	
-	Usart_Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
-		
-	#elif defined(__USART_DISPALY_WAVE)
-	
-	Usart_Display_Wave();	//串口输出波形
-	
-	#endif
-	
-	
-	
-	//如果定义LCD_DISPLAY（include.h中），就编译LCD代码
-	#ifdef LCD_DISPLAY
-	
-		#if defined(__DISPALY_DATA)
-		
-		Display_data();	//显示偏移距离和水平速度
-		
-		#endif
-		
-		#if defined(__DISPALY_GRAPH)
-		
-		Draw_Graph();	//绘制图形曲线
-		
-		#endif
-	
-//		Camera_Buffer_To_Lcd_Buffer();							//手动把图像从缓存搬运到显存
-		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
-	
-	#endif
-	
-	if(SD_State)	//如果SD卡挂载成功
-	{
-		TO_SDcard();      //SD卡
-	}
+	Image_Output();	//数据输出
 
 }
 
