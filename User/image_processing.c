@@ -613,6 +613,7 @@ void Image_Output(void)
 		
 		#endif
 	
+		Creat_LCD();	//还原RGB565图像，存入显示缓冲
 		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
 	
 	#endif
@@ -640,7 +641,6 @@ void Image_Process(void)
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
-	Creat_LCD();	//还原RGB565图像，存入显示缓存
 	
 	Image_Output();	//数据输出
 

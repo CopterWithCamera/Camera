@@ -81,15 +81,13 @@ void My_Camera_Init(void)
 		while(1);  
 	}
 
-
 	OV5640_Init();			//DCMI  DMA  INTERRUPT
-
 	OV5640_RGB565Config();
 //	OV5640_AUTO_FOCUS();
 
 	//使能DCMI采集数据
 	DCMI_Cmd(ENABLE); 
-	DCMI_CaptureCmd(ENABLE); 	
+//	DCMI_CaptureCmd(ENABLE); 	
 }
 
 void My_LCD_Init(void)
