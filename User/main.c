@@ -311,7 +311,7 @@ int main(void)
 			fps_temp =0;	//重置
 			
 			#ifdef __LCD_DISPLAY
-				#if FRAME_RATE_DISPLAY	//显示帧率，默认不显示	
+				#ifdef __FRAME_RATE_DISPLAY	//显示帧率，默认不显示	
 				
 					/*输出帧率*/
 					LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
