@@ -27,4 +27,6 @@ void Image_Process(void);
 void DMA2_Stream0_Init(void);
 void DMA_AtoB_Config(uint32_t DMA_Memory_A_Addr,uint32_t DMA_Memory_B_Addr);
 
+void Data_Output(u8 ch);
+
 #endif /* __IMAGE_PROCESSING_H */

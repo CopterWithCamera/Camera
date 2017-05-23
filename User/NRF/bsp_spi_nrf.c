@@ -34,12 +34,14 @@
 	\*																*/
 
 #include "bsp_spi_nrf.h"
-#include "stdio.h"
+#include "include.h"
 
 u8 RX_BUF[RX_PLOAD_WIDTH];		//接收数据缓存
 u8 TX_BUF[TX_PLOAD_WIDTH];		//发射数据缓存
 u8 TX_ADDRESS[TX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01};  // 定义一个静态发送地址
-u8 RX_ADDRESS[RX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01}; 
+u8 RX_ADDRESS[RX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01};
+
+int NRF24L01_State = 0;	//0 -- 连接失败  1 -- 连接成功
 
 void Delay(__IO u32 nCount)
 {
@@ -461,6 +463,23 @@ u8 NRF_Send(u8 Data)
 	}
 	return 0;	//发送缓冲区未满
 }
+
+void NRF24L01_Init(void)
+{
+	SPI_NRF_Init();
+	if(NRF_Check() != 0)
+	{
+		printf("NRF初始化成功！\r\n");
+		NRF_TX_Mode();				//设置为发送模式
+		NRF24L01_State = 1;
+	}
+	else
+	{
+		printf("NRF24L01初始化失败！\r\n");
+		NRF24L01_State = 0;
+	}
+}
+
 /*********************************************END OF FILE**********************/
 
 ///*判断发送状态*/

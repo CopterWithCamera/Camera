@@ -10,27 +10,18 @@
 //设置变量定义到“EXRAM”节区的宏
 #define __EXRAM  __attribute__ ((section ("EXRAM")))
 
+//*************************************
 
-//输出串口选择
-#define DEBUG_USART			USART1
-#define DATA_OUT_USART		USART2
+//======== LCD显示 =================
 
-
-//************ 功能开关 ***************
-
-//帧率显示
-#define __FRAME_RATE_DISPLAY
-
-//============================
-//LCD显示
 //#define __LCD_DISPLAY
 
 //显示内容
 //#define __DISPALY_DATA
 //#define __DISPALY_GRAPH
+//#define __DISPLAY_FRAME_RATE
 
-//============================
-//图像传输
+//======== 图像传输 =================
 
 //#define __USART_DISPLAY
 #define __NRF_DISPLAY
@@ -40,10 +31,16 @@
 //#define __DISPLAY_MATRIX	//显示矩阵
 //#define __DISPALY_WAVE	//显示波形
 
+//======== 输出串口选择 ==============
+
+#define DEBUG_USART			USART1
+#define DATA_OUT_USART		USART2
+
 //*************************************
 
 extern uint8_t dispBuf[100];
 extern int SD_State;
+extern int NRF24L01_State;
 extern float fps;
 
 #endif /* __INCLUDE_H */

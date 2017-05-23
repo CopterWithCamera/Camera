@@ -35,20 +35,6 @@ uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
 float length;	//偏差
 float speed;
 
-void Data_Output(u8 ch)
-{
-	#ifdef __USART_DISPLAY
-		//串口发送
-		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
-		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
-	#endif
-	
-	#ifdef __NRF_DISPLAY
-		//NRF发送
-		NRF_Send(ch);
-	#endif
-}
-
 //所有取数据的函数以Get开头
 //所有存数据的函数以To开头
 
@@ -576,6 +562,22 @@ void Draw_Graph()
 }
 
 #endif
+
+void Data_Output(u8 ch)
+{
+	#ifdef __USART_DISPLAY
+		//串口发送
+		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
+		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+	#endif
+	
+	#ifdef __NRF_DISPLAY
+		if(NRF24L01_State)
+		{
+			NRF_Send(ch);	//NRF发送
+		}
+	#endif
+}
 
 void Image_Output(void)
 {

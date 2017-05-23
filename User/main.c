@@ -250,48 +250,24 @@ int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 	
-	Debug_USART_Config();
-	USART2_Config();
-	
-	/* 配置SysTick 为1ms中断一次,时间到后触发定时中断，
-	*进入stm32fxx_it.c文件的SysTick_Handler处理，通过数中断次数计时
-	*/
-	
+	Debug_USART_Config();	//串口1
+	USART2_Config();		//串口2
 	SysTick_Init();		//用于延时函数
-	
-	My_RAM_TEST();
-	
+	My_RAM_TEST();		//内存分配情况测试
 	EXTI_Key_Config();	//初始化外部中断按键
-	
-	//NRF24L01
-	SPI_NRF_Init();
-	if(NRF_Check() != 0)
-	{
-		printf("NRF初始化成功！\r\n");
-		NRF_TX_Mode();				//设置为发送模式
-	}
-	else
-	{
-		printf("NRF24L01初始化失败！\r\n");
-	}
+	NRF24L01_Init();	//NRF24L01
 
-	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-	#ifdef __LCD_DISPLAY
-		
+	#ifdef __LCD_DISPLAY	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
 		My_LCD_Init();		//初始化LCD（包括DMA2D初始化）
-		
 	#endif
 	
 	My_Camera_Init();	//初始化OV5640
 	
-	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-	#ifdef __LCD_DISPLAY
-			
+	#ifdef __LCD_DISPLAY	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
 		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
-		
 	#endif
 	
-	SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
+//	SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
 	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
@@ -311,7 +287,7 @@ int main(void)
 			fps_temp =0;	//重置
 			
 			#ifdef __LCD_DISPLAY
-				#ifdef __FRAME_RATE_DISPLAY	//显示帧率，默认不显示	
+				#ifdef __DISPLAY_FRAME_RATE	//显示帧率，默认不显示	
 				
 					/*输出帧率*/
 					LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
