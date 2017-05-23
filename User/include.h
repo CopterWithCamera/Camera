@@ -19,7 +19,7 @@
 //************ 功能开关 ***************
 
 //帧率显示
-#define FRAME_RATE_DISPLAY 		1
+#define __FRAME_RATE_DISPLAY
 
 //============================
 //LCD显示
