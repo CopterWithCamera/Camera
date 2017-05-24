@@ -132,11 +132,15 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 
 *******************************************************/
 
+uint8_t count=0;
+uint8_t dif1,dif2,dif3,final_bias=0;
+uint8_t Flag=0;
 void Image_Fix(void)	//图像算法
 {
 	uint32_t i,j,place,mid,start,end=0;
 	float a,b,c,d,e,threhold,bias=0;
-	
+	uint8_t panduanshuju[3];
+
 	
 	
 	for(i = 2;i<IMG_HEIGHT;i++)
@@ -251,18 +255,8 @@ void Image_Fix(void)	//图像算法
 			}
 			length=(float)(bias-(IMG_WIDTH/2));
 			speed=atan((b-a)/(IMG_HEIGHT-5))*(180/3.14);
-}
-
-
-
-
-uint8_t panduanshuju[3];
-uint8_t count=0;
-uint8_t dif1,dif2,dif3,final_bias=0;
-void Determin(void)
-{
-	uint8_t Flag=0;
-	panduanshuju[count]=length;
+			
+			panduanshuju[count]=length;
 	count=count+1;
 	if (count>2)
 		{
@@ -314,8 +308,13 @@ void Determin(void)
 			}
 		}
 	}
-
 }
+
+
+
+
+
+
 //************** 输出信息 ************************************************
 
 //显示图像，配合山外多功能调试助手
