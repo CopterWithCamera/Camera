@@ -363,8 +363,6 @@ void OV5640_FOCUS_AD5820_Constant_Focus(void)
 
 static void OV5640_FOCUS_AD5820_Single_Focus()
 {
-     
-
     u8 state = 0x8F;
     u8 state_ack = 0x8F;	
     u8 state_cmd = 0x8F;		
@@ -495,10 +493,9 @@ static void OV5640_FOCUS_AD5820_Check_MCU(void)
 
 void OV5640_AUTO_FOCUS(void)
 {
-   OV5640_FOCUS_AD5820_Init();
-	
-
-   OV5640_FOCUS_AD5820_Constant_Focus();
+	OV5640_FOCUS_AD5820_Init();
+	Delay_ms(1000);
+	OV5640_FOCUS_AD5820_Constant_Focus();
 }
 
 

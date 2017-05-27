@@ -35,6 +35,7 @@
 
 #include "bsp_spi_nrf.h"
 #include "include.h"
+#include "stdio.h"
 
 u8 RX_BUF[RX_PLOAD_WIDTH];		//接收数据缓存
 u8 TX_BUF[TX_PLOAD_WIDTH];		//发射数据缓存
@@ -458,7 +459,7 @@ u8 NRF_Send(u8 Data)
 				return 1;	//发送成功
 		}
 		
-		printf("发送失败！");
+		printf("发送失败！\r\n");
 		return 2;	//发送失败
 	}
 	return 0;	//发送缓冲区未满
