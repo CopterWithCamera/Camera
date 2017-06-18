@@ -265,7 +265,9 @@ int main(void)
 		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
 	#endif
 	
-//	SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
+	#ifdef __SD_SAVE
+		SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
+	#endif
 	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)

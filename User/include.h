@@ -36,6 +36,10 @@
 #define DEBUG_USART			USART1
 #define DATA_OUT_USART		USART2
 
+//======== SD¿¨´æÍ¼ ==================
+
+#define __SD_SAVE
+
 //*************************************
 
 extern uint8_t dispBuf[100];
