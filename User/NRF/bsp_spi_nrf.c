@@ -374,7 +374,7 @@ u8 NRF_Tx_Dat(u8 *txbuf)
 	/*清除TX_DS或MAX_RT中断标志*/
 	SPI_NRF_WriteReg(NRF_WRITE_REG+STATUS,state); 	
 
-	SPI_NRF_WriteReg(FLUSH_TX,NOP);		//清除TX FIFO寄存器 
+	SPI_NRF_WriteReg(FLUSH_TX,NOP);		//清除TX FIFO寄存器
 
 	/*判断中断类型*/    
 	if(state&MAX_RT)					//达到最大重发次数
@@ -383,7 +383,7 @@ u8 NRF_Tx_Dat(u8 *txbuf)
 		return TX_DS;
 	else						  
 		return ERROR;					//其他原因发送失败
-} 
+}
 
 /**
   * @brief   用于从NRF的接收缓冲区中读出数据

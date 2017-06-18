@@ -29,5 +29,8 @@
 
 void Debug_USART_Config(void);
 void USART2_Config(void);
+void USART2_Send(unsigned char ch);
+
+extern int full_flag;	//如果队列已满，则置1
 
 #endif /* __USART1_H */

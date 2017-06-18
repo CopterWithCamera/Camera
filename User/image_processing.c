@@ -628,9 +628,11 @@ void Draw_Graph()
 void Data_Output(u8 ch)
 {
 	#ifdef __USART_DISPLAY
-		//串口发送
-		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
-		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+//		//串口发送
+//		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
+//		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
+		USART2_Send(ch);
+	
 	#endif
 	
 	#ifdef __NRF_DISPLAY
@@ -645,19 +647,25 @@ void Image_Output(void)
 {
 	//*******************************************************************
 	//输出信息
-	#if defined(__DISPLAY_IMAGE)
-		
-		Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
-		
-	#elif defined(__DISPLAY_MATRIX)
 	
-		Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+	if(!full_flag)
+	{
+		#if defined(__DISPLAY_IMAGE)
 		
-	#elif defined(__DISPALY_WAVE)
+			Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+			
+		#elif defined(__DISPLAY_MATRIX)
+		
+			Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+			
+		#elif defined(__DISPALY_WAVE)
+		
+			Display_Wave();	//串口输出波形
+		
+		#endif
+	}
 	
-		Display_Wave();	//串口输出波形
-	
-	#endif
+
 	
 	//*******************************************************************
 	//LCD显示

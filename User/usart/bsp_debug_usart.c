@@ -18,47 +18,111 @@
 #include "./usart/bsp_debug_usart.h"
 #include "include.h"
 
+u8 TxBuffer2[4000];
+u16 TxCounter2=0;
+u16 cnt2=0;
+int full_flag = 0;
+	
 //配置USART2
 void USART2_Config(void)
 {
-  GPIO_InitTypeDef GPIO_InitStructure;
-  USART_InitTypeDef USART_InitStructure;
-		
-  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE);
-
-  /* 使能 UART 时钟 */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-  
-  /* 连接 PXx 到 USARTx_Tx*/
-  GPIO_PinAFConfig(GPIOA,GPIO_PinSource2, GPIO_AF_USART2);
-
-  /*  连接 PXx 到 USARTx__Rx*/
-  GPIO_PinAFConfig(GPIOA,GPIO_PinSource3,GPIO_AF_USART2);
-
-  /* 配置Tx引脚为复用功能  */
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
 	
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;  
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
+	/* 使能GPIOA时钟 */
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE);
 
-  /* 配置Rx引脚为复用功能 */
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
+	/* 使能 UART 时钟 */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+
+	/* 配置中断源 */
+	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	/* 连接 PXx 到 USARTx_Tx*/
+	GPIO_PinAFConfig(GPIOA,GPIO_PinSource2, GPIO_AF_USART2);
+
+	/*  连接 PXx 到 USARTx__Rx*/
+	GPIO_PinAFConfig(GPIOA,GPIO_PinSource3,GPIO_AF_USART2);
+
+	/* 配置Tx引脚为复用功能  */
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;  
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	/* 配置Rx引脚为复用功能 */
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 			
-  /* 配置串DEBUG_USART 模式 */
-  USART_InitStructure.USART_BaudRate = 115200;
-  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-  USART_InitStructure.USART_StopBits = USART_StopBits_1;
-  USART_InitStructure.USART_Parity = USART_Parity_No ;
-  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-  USART_Init(USART2, &USART_InitStructure); 
-  USART_Cmd(USART2, ENABLE);
+	/* 配置USART2模式 */
+	USART_InitStructure.USART_BaudRate = 115200;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;
+	USART_InitStructure.USART_Parity = USART_Parity_No ;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+	USART_Init(USART2, &USART_InitStructure); 
+	USART_Cmd(USART2, ENABLE);
 }
+
+
+void USART2_IRQHandler(void)
+{
+	//usart2发送完成中断
+	if(USART_GetITStatus(USART2,USART_IT_TXE )) 
+	{		
+		//发送数据
+		USART2->DR = TxBuffer2[TxCounter2++];
+		
+		//处理发送计数指针TxCounter2
+		if(TxCounter2>=4000)
+		{
+			TxCounter2=0;
+		}
+		
+		if(TxCounter2 == cnt2)	//发送指针追上了输入指针
+		{
+			USART2->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
+			full_flag = 0;	//清除队满标志
+		}
+		
+//		USART_ClearITPendingBit(USART2,USART_IT_TXE);
+	}
+}
+
+void USART2_Send(unsigned char ch)
+{
+	if(!full_flag)
+	{
+		TxBuffer2[cnt2++] = ch;
+	
+		//处理传入计数指针数值
+		if(cnt2>=4000)
+		{
+			cnt2=0;
+		}
+		
+		if(cnt2 == TxCounter2)	//输入指针追上了发送指针
+		{
+			full_flag = 1;
+		}
+
+		if(!(USART2->CR1 & USART_CR1_TXEIE))//检测是否发完，发完CR1的TXEIE被上面置为0了（关闭了中断）
+		{
+			USART_ITConfig(USART2, USART_IT_TXE, ENABLE); //打开发送中断
+		}
+	}
+}
+
 
 
  /**
