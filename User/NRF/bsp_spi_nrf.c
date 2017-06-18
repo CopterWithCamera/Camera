@@ -449,8 +449,9 @@ u8 NRF_Send(u8 Data)
 			#define RX_DR		0x40 //接收到数据中断标志位
 		*/
 		
-		send_counter = 20;
-		while(send_counter>0)
+		//自动重发
+		send_counter = 20;		//自动重发计数
+		while(send_counter>0)	
 		{
 			send_counter--;
 			status = NRF_Tx_Dat(TX_BUF);	//发送数据，获取发送状态
