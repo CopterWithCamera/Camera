@@ -12,13 +12,6 @@
  *
  * 摄像头采集的图像大小（可以用这个算数组长度） extern uint16_t img_width, img_height;
  * 
- * 显存地址： LCD_FRAME_BUFFER
- *
- * 摄像头DMA2配置方式：
- * #define FSMC_LCD_ADDRESS      LCD_FRAME_BUFFER
- * 把 FSMC_LCD_ADDRESS 的定义配成希望摄像头数据存的地方就行了
- * 缓存大小一定要用 img_width 和 img_height 计算
- * 
  */
  
 //**************************************************************
@@ -27,8 +20,12 @@
 uint8_t CAMERA_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
 
 //灰度图像存储空间
-uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//长度*宽度*1字节
+uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
 
+//运算结果存储空间
+uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+
+//输出参数
 float length;	//偏差
 float speed;
 
@@ -51,7 +48,7 @@ void Creat_Gray(void)
 
 //************************ 为算法提供数据源 ************************************
 
-//获取单点灰度区数值
+//获取单点Gray区数值
 uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
@@ -63,8 +60,8 @@ uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 	return gray_array[num/2];
 }
 
-//存储单点数据到灰度区
-void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
+//存储单点数据到result区
+void To_Result(uint16_t row,uint16_t column,uint8_t gray)
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
 	//行：row      范围：1 -- IMG_HEIGHT
@@ -72,10 +69,27 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 
 	uint32_t num;
 	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	gray_array[num/2] = gray;
+	result_array[num/2] = gray;
 }
 
 //************** 输出信息 ************************************************
+
+//将数据传送到对外端口
+void Data_Output(u8 ch)
+{
+	#ifdef __USART_DISPLAY
+
+		USART2_Send(ch);
+	
+	#endif
+	
+	#ifdef __NRF_DISPLAY
+		if(NRF24L01_State)
+		{
+			NRF_Send(ch);	//NRF发送
+		}
+	#endif
+}
 
 //显示图像，配合山外多功能调试助手
 void Display_Image(void)
@@ -206,22 +220,6 @@ void Display_Wave(void)
 	
 }
 
-void Data_Output(u8 ch)
-{
-	#ifdef __USART_DISPLAY
-
-		USART2_Send(ch);
-	
-	#endif
-	
-	#ifdef __NRF_DISPLAY
-		if(NRF24L01_State)
-		{
-			NRF_Send(ch);	//NRF发送
-		}
-	#endif
-}
-
 void Image_Output(void)
 {
 	//*******************************************************************
@@ -272,7 +270,6 @@ void Image_Process(void)
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
-	
 	Image_Output();	//数据输出
 
 }

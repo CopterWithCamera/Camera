@@ -6,10 +6,13 @@
 
 /*
       本文件可以使用的资源：
-	  1.gray_array[IMG_WIDTH*IMG_HEIGHT];     						灰度图像矩阵
-	  2.uint8_t Get_Gray(uint16_t row,uint16_t column);				从灰度数据存储区
-      3.void To_Gray(uint16_t row,uint16_t column,uint8_t gray);	向灰度取存入数据
-	  4.使用__EXRAM尾缀向外部SDRAM中定义大数组    	例子：int array[1000] __EXRAM;
+	  1.CAMERA_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT*2]					彩色图像数组
+	  2.gray_array[IMG_WIDTH*IMG_HEIGHT];     						灰度图像数组
+	  3.uint8_t Get_Gray(uint16_t row,uint16_t column);				从Gray区提取数据
+      4.void To_Result(uint16_t row,uint16_t column,uint8_t gray);	向Result取存入数据
+	  5.float length;												对外输出参数1（将数值赋值给变量后将自动输出）
+	  6.float speed;												对外输出参数2（将数值赋值给变量后将自动输出）
+	  7.使用__EXRAM尾缀向外部SDRAM中定义大数组    	例子：int array[1000] __EXRAM;
 */
 
 uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
