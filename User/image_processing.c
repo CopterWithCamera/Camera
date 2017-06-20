@@ -3,6 +3,7 @@
 #include "math.h"
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
+#include "image_fix.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -22,15 +23,12 @@
  
 //**************************************************************
  
-
+uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
 	
 //**************************************************************	
 	
 //图像缓存数组，第一行是原图，第二行是处理后的图
 uint8_t CAMERA_BUFFER_ARRAY[2 * IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
-
-uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
-uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
 
 float length;	//偏差
 float speed;
@@ -70,7 +68,7 @@ void Creat_LCD(void)
 	}
 }
 
-//1.获取单点灰度区数值
+//获取单点灰度区数值
 uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
@@ -82,32 +80,7 @@ uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 	return gray_array[num/2];
 }
 
-//2.存储单点数据到暂存区
-void To_Temp(uint16_t row,uint16_t column,uint8_t gray)
-{
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
-
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	temp_array[num/2] = gray;
-}
-
-
-//3.获取单点暂存区数值
-uint8_t Get_Temp(uint16_t row,uint16_t column)
-{
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
-
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	return temp_array[num/2];
-}
-
-//4.存储单点数据到灰度区
+//存储单点数据到灰度区
 void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
@@ -119,23 +92,7 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 	gray_array[num/2] = gray;
 }
 
-/*******************************************************
 
-函数功能：图像算法
-
-入参：无
-
-出参：无
-
-说明：图像处理函数，可以使用Get_Gray(),To_Temp(),
-	Get_Temp(),To_Gray()是个函数作为数据源.
-
-*******************************************************/
-
-void Image_Fix(void)	//图像算法
-{
-	
-}
 
 //************** 输出信息 ************************************************
 
@@ -522,7 +479,7 @@ void Image_Output(void)
 
 //*********************** 总执行函数 **********************************************
 
-uint8_t image_updata_flag = 0;
+uint8_t image_updata_flag = 0;		//新图像采集完成标志  0：新图没有采集完成    1：新图采集完成
 void Image_Process(void)
 {
 	DCMI_CaptureCmd(ENABLE);			//读取一帧图像到缓存
