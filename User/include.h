@@ -3,6 +3,7 @@
 
 #include "stm32f4xx.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 //显示帧率数据，默认不显示，需要显示时把这个宏设置为1即可，（会有轻微花屏现象！）
 //经测试液晶显示摄像头数据800*480像素，帧率为14.2帧/秒。
@@ -11,15 +12,6 @@
 #define __EXRAM  __attribute__ ((section ("EXRAM")))
 
 //*************************************
-
-//======== LCD显示 =================
-
-//#define __LCD_DISPLAY
-
-//显示内容
-//#define __DISPALY_DATA
-//#define __DISPALY_GRAPH
-//#define __DISPLAY_FRAME_RATE
 
 //======== 图像传输 =================
 
@@ -42,7 +34,6 @@
 
 //*************************************
 
-extern uint8_t dispBuf[100];
 extern int SD_State;
 extern int NRF24L01_State;
 extern float fps;

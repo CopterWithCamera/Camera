@@ -22,19 +22,15 @@
  */
  
 //**************************************************************
- 
-uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
 	
-//**************************************************************	
-	
-//图像缓存数组，第一行是原图，第二行是处理后的图
-uint8_t CAMERA_BUFFER_ARRAY[2 * IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
+//图像缓存数组,大小：宽度*长度*2字节
+uint8_t CAMERA_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
+
+//灰度图像存储空间
+uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//长度*宽度*1字节
 
 float length;	//偏差
 float speed;
-
-//所有取数据的函数以Get开头
-//所有存数据的函数以To开头
 
 //生成灰度矩阵
 void Creat_Gray(void)
@@ -53,20 +49,7 @@ void Creat_Gray(void)
 	}
 }
 
-void Creat_LCD(void)
-{
-	uint32_t i;
-	uint8_t rb,g;
-	
-	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
-	{
-		rb = gray_array[i] / 8;
-		g = gray_array[i] / 4;
-		
-		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2+1] = (rb << 3) + ((g >> 3) & 0x07);	//低八位在后面，高八位在前面
-		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2] = (g << 5) + rb;
-	}
-}
+//************************ 为算法提供数据源 ************************************
 
 //获取单点灰度区数值
 uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
@@ -91,8 +74,6 @@ void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
 	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
 	gray_array[num/2] = gray;
 }
-
-
 
 //************** 输出信息 ************************************************
 
@@ -225,184 +206,6 @@ void Display_Wave(void)
 	
 }
 
-
-//******************** LCD显示内容 *********************************************************************
-
-//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef __LCD_DISPLAY
-
-//非DMA方式显示
-void Camera_Buffer_To_Lcd_Buffer(void)
-{
-	int i,j;
-	
-	//原图+运算后图（（IMG_HEIGHT*2） * IMG_WIDTH）
-	for(i = 0;i<IMG_HEIGHT*2;i++)
-	{
-		for(j = 0;j<IMG_WIDTH*2;j=j+1)
-		{
-			LCD_FRAME_BUFFER_ARRAY[i*1600+j] = CAMERA_BUFFER_ARRAY[i*IMG_WIDTH*2+j];
-		}
-			
-	}
-	
-}
-
-
-void DMA_AtoB_Config(uint32_t DMA_Memory_A_Addr,uint32_t DMA_Memory_B_Addr)
-{
-	DMA_InitTypeDef  DMA_InitStructure;
-
-	/* 使能DMA时钟 */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-	/* 复位初始化DMA数据流 */
-	DMA_DeInit(DMA2_Stream0);
-	/* 确保DMA数据流复位完成 */
-	while (DMA_GetCmdStatus(DMA2_Stream0) != DISABLE){}
-
-	DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
-	DMA_InitStructure.DMA_PeripheralBaseAddr = DMA_Memory_A_Addr;
-	DMA_InitStructure.DMA_Memory0BaseAddr = DMA_Memory_B_Addr;
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToMemory;
-	DMA_InitStructure.DMA_BufferSize = IMG_WIDTH;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Enable;
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh ;
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;     
-	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC8;
-	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-
-	DMA_Init(DMA2_Stream0, &DMA_InitStructure); 
-		
-	DMA_ClearFlag(DMA2_Stream0,DMA_FLAG_TCIF0);
-		
-	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 
-		
-	DMA_Cmd(DMA2_Stream0, ENABLE);
-	while(DMA_GetCmdStatus(DMA2_Stream1) != ENABLE){}
-  
-}
-
-void DMA2_Stream0_Init(void)
-{
-	NVIC_InitTypeDef NVIC_InitStructure; 
-	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-	/* 配置中断 */
-//	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-	
-	/* 配置中断源 */
-	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn ;//DMA数据流中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-
-	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 	
-	
-}
-
-
-//********************* 在LCD上绘图 *****************************************************************
-
-//显示偏移距离和水平速度
-void Display_data(void)
-{	
-	LCD_SetColors(LCD_COLOR_WHITE,TRANSPARENCY);
-//	LCD_ClearLine(LINE(11));
-//	LCD_ClearLine(LINE(14));
-	sprintf((char*)dispBuf, "            ");
-	LCD_DisplayStringLine_EN_CH(LINE(11),dispBuf);
-	LCD_DisplayStringLine_EN_CH(LINE(14),dispBuf);
-	
-	sprintf((char*)dispBuf, "%.2f", length);
-	LCD_DisplayStringLine_EN_CH(LINE(10),(uint8_t*)"偏移距离：");
-	LCD_DisplayStringLine_EN_CH(LINE(11),dispBuf);
-	sprintf((char*)dispBuf, "%.2f", speed);
-	LCD_DisplayStringLine_EN_CH(LINE(13),(uint8_t*)"水平速度：");
-	LCD_DisplayStringLine_EN_CH(LINE(14),dispBuf);
-}
-
-
-
-//绘制图形曲线
-void Draw_Graph()
-{
-	/*
-	
-	x轴长度540
-	y轴长度200（±100）
-	
-	每行画90个点，每个点间隔6个像素
-	
-	*/
-	
-	static int x = 0;
-	int y1,y2 = 0;
-
-	if(x == 0)
-	{
-		x = 0;
-		
-		//清屏
-		LCD_SetColors(LCD_COLOR_BLACK, TRANSPARENCY);
-		LCD_DrawFullRect(235,0,545,445);
-		LCD_SetColors(LCD_COLOR_WHITE, TRANSPARENCY);
-		
-		//显示图例
-		LCD_DisplayStringLine_EN_CH(LINE(1),(uint8_t*)"                length");
-		LCD_DisplayStringLine_EN_CH(LINE(10),(uint8_t*)"                speed");
-		
-		//画坐标系
-		
-		//横轴
-		LCD_DrawLine(240, 109, 540, 0);
-		LCD_DrawLine(240, 110, 540, 0);
-		LCD_DrawLine(240, 111, 540, 0);
-		
-		LCD_DrawLine(240, 329, 540, 0);
-		LCD_DrawLine(240, 330, 540, 0);
-		LCD_DrawLine(240, 331, 540, 0);
-		
-		//纵轴
-		LCD_DrawLine(239, 10, 200, 1);
-		LCD_DrawLine(240, 10, 200, 1);
-		LCD_DrawLine(241, 10, 200, 1);
-		
-		LCD_DrawLine(239, 230, 200, 1);
-		LCD_DrawLine(240, 230, 200, 1);
-		LCD_DrawLine(241, 230, 200, 1);
-		
-
-	}
-	
-	//横轴累加
-	x++;
-	
-	
-	
-	//位移
-	y1 = 110 + length;
-	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
-	LCD_DrawFullCircle(240 + x*6,(uint16_t)y1 ,2);
-	
-	//速度
-	y2 = 330 + speed;
-	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
-	LCD_DrawFullCircle(240 + x*6,(uint16_t)y2 ,2);
-	
-	if(x>=89)
-	{
-		x = 0;
-	}
-}
-
-#endif
-
 void Data_Output(u8 ch)
 {
 	#ifdef __USART_DISPLAY
@@ -440,29 +243,6 @@ void Image_Output(void)
 		
 		#endif
 	}
-	
-
-	
-	//*******************************************************************
-	//LCD显示
-	#ifdef __LCD_DISPLAY
-	
-		#if defined(__DISPALY_DATA)
-		
-			Display_data();	//显示偏移距离和水平速度
-		
-		#endif
-		
-		#if defined(__DISPALY_GRAPH)
-		
-			Draw_Graph();	//绘制图形曲线
-		
-		#endif
-	
-		Creat_LCD();	//还原RGB565图像，存入显示缓冲
-		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
-	
-	#endif
 	
 	//*******************************************************************
 	//SD存图

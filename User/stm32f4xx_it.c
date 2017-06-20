@@ -173,36 +173,6 @@ extern uint16_t lcd_width, lcd_height;
 extern uint16_t img_width, img_height;
 extern uint8_t fps_temp;
 
-
-//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef __LCD_DISPLAY
-
-//缓存 --> 显存
-uint16_t line_num0 =1;
-void DMA2_Stream0_IRQHandler(void)
-{
-	if(  DMA_GetITStatus(DMA2_Stream0,DMA_IT_TCIF0) == SET )    
-	{
-		/*行计数*/
-		line_num0 = line_num0 + 1;
-
-		if(line_num0 >= IMG_HEIGHT * 2 +1)
-		{
-			/*传输完一帧,计数复位*/
-			line_num0=1;
-		}
-		else  /*DMA 一行一行传输*/
-		{  
-			//FSMC_LCD_ADDRESS 是 摄像头采集图像的缓存区地址
-			DMA_AtoB_Config(FSMC_LCD_ADDRESS + lcd_width*2*(line_num0-1),LCD_FRAME_BUFFER+(1600*(line_num0-1)));
-		}
-
-	}
-	DMA_ClearITPendingBit(DMA2_Stream0,DMA_IT_TCIF0);
-}
-
-#endif
-
 //DCMI --> 缓存
 static uint16_t line_num =0;	//记录传输了多少行
 void DMA2_Stream1_IRQHandler(void)
