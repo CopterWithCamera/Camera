@@ -645,11 +645,6 @@
               <FilePath>..\..\User\image_processing.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_lcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\lcd\bsp_lcd.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_ov5640.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\camera\bsp_ov5640.c</FilePath>
@@ -658,11 +653,6 @@
               <FileName>bsp_sdram.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sdram\bsp_sdram.c</FilePath>
-            </File>
-            <File>
-              <FileName>fonts.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\font\fonts.c</FilePath>
             </File>
             <File>
               <FileName>bsp_debug_usart.c</FileName>
