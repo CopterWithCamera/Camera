@@ -74,6 +74,45 @@ void To_Result(uint16_t row,uint16_t column,uint8_t gray)
 
 //************** 输出信息 ************************************************
 
+void Data_Output_Ctrl(u8 num,u8 cmd)	//num：指令号		cmd：指令内容
+{
+	switch(num)
+	{
+		case 1:			//图像传输控制
+			if(cmd)
+			{
+				
+			}
+			else
+			{
+				
+			}
+			break;
+		case 2:			//波形传输控制
+			if(cmd)
+			{
+				
+			}
+			else
+			{
+				
+			}			
+			break;
+		case 3:			//显示fps
+			if(cmd)
+			{
+				
+			}
+			else
+			{
+				
+			}
+			break;
+		default:
+			break;
+	}
+}
+
 //将数据传送到对外端口
 void Data_Output(u8 ch)
 {
@@ -119,48 +158,6 @@ void Display_Image(void)
 	ch = 0x01;
 	Data_Output(ch);
 	
-}
-
-//显示矩阵，直接用串口调试助手查看
-void Display_Matrix(void)
-{
-	uint32_t i,j;
-	uint8_t ch,tmp;
-	
-	//发送图像
-	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
-	{
-		for(j = 0;j<IMG_WIDTH;j++)	//列扫描
-		{
-			ch = gray_array[i];
-		
-			tmp = ch/100;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ch/10;
-			tmp = tmp%10;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ch%10;
-			tmp = tmp%10;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ',';
-			Data_Output(tmp);
-			
-		}
-		ch = '\r';Data_Output(ch);
-		ch = '\n';Data_Output(ch);
-	}
-	
-	ch = '\r';Data_Output(ch);
-	ch = '\n';Data_Output(ch);
-	
-	ch = '\r';Data_Output(ch);
-	ch = '\n';Data_Output(ch);
 }
 
 //float转4个unsigned char
@@ -217,7 +214,34 @@ void Display_Wave(void)
 	ch = 0x03;
 	Data_Output(ch);
 	
+}
+
+void Send_Parameter_Fps(void)
+{
+	uint8_t ch;
+	unsigned char a[4];
 	
+	ch = 0x04;
+	Data_Output(ch);
+	ch = 0xFB;
+	Data_Output(ch);
+	
+	//发送fps
+	float_char(fps,a);
+	ch = a[0];
+	Data_Output(ch);
+	ch = a[1];
+	Data_Output(ch);
+	ch = a[2];
+	Data_Output(ch);	
+	ch = a[3];
+	Data_Output(ch);	
+	
+	//发送包尾
+	ch = 0xFB;
+	Data_Output(ch);
+	ch = 0x04;
+	Data_Output(ch);
 }
 
 void Image_Output(void)
@@ -230,14 +254,20 @@ void Image_Output(void)
 		#if defined(__DISPLAY_IMAGE)
 		
 			Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
-			
-		#elif defined(__DISPLAY_MATRIX)
 		
-			Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+		#endif
+		
 			
-		#elif defined(__DISPALY_WAVE)
+		#if defined(__DISPALY_WAVE)
 		
 			Display_Wave();	//串口输出波形
+		
+		#endif
+		
+		
+		#if defined(__PARAMETER_FPS)
+		
+			Send_Parameter_Fps();
 		
 		#endif
 	}

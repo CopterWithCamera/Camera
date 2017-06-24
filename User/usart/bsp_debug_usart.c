@@ -18,11 +18,45 @@
 #include "./usart/bsp_debug_usart.h"
 #include "include.h"
 
+//处理USART2接收到的信息
+void USART2_Receive_Data_Handle(u8 data)
+{
+	static int state = 0;
+
+	switch(state)
+	{
+		case 0:
+			if(data == 0x01)	//帧头 0x01 0xFA
+				state = 1;
+			break;
+		case 1:
+			if(data == 0xFA)
+				state = 2;
+			break;
+		case 2:
+			if(data == 0x01)
+				state = 3;		//转图像传输指令
+			else if(data == 0x02)
+				state = 4;		//转波形传输指令
+			break;
+		case 3:
+			state = 0;	//归零
+		
+			break;
+		case 4:
+			state = 0;	//归零
+		
+			break;
+		default:
+			break;
+	}
+}
+
 u8 TxBuffer2[4000];
 u16 TxCounter2=0;
 u16 cnt2=0;
 int full_flag = 0;
-	
+
 //配置USART2
 void USART2_Config(void)
 {
@@ -72,16 +106,32 @@ void USART2_Config(void)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_Init(USART2, &USART_InitStructure); 
 	USART_Cmd(USART2, ENABLE);
+	
+	//打开接收中断
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
 
 void USART2_IRQHandler(void)
 {
+	u8 com_data;
+	
+	//usart2接收中断
+	if( USART_GetITStatus(USART1,USART_IT_RXNE) )
+	{
+		USART_ClearITPendingBit(USART1,USART_IT_RXNE);//清除中断标志
+
+		com_data = USART1->DR;
+		
+		//此处添加接收处理函数
+		
+	}
+	
 	//usart2发送完成中断
 	if(USART_GetITStatus(USART2,USART_IT_TXE )) 
 	{		
 		//发送数据
-		USART2->DR = TxBuffer2[TxCounter2++];
+		USART2->DR = TxBuffer2[TxCounter2++];	//写DR清除中断标志位
 		
 		//处理发送计数指针TxCounter2
 		if(TxCounter2>=4000)

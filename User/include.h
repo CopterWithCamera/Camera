@@ -18,10 +18,10 @@
 //#define __USART_DISPLAY
 #define __NRF_DISPLAY
 
-//显示内容（只能选择一个）：
-#define __DISPLAY_IMAGE	//显示图像
-//#define __DISPLAY_MATRIX	//显示矩阵
+//显示内容：
+#define __DISPLAY_IMAGE		//显示图像
 //#define __DISPALY_WAVE	//显示波形
+#define __PARAMETER_FPS		//发送FPS 
 
 //======== 输出串口选择 ==============
 
