@@ -3,6 +3,7 @@
 #include "math.h"
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
+#include "image_fix.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -11,39 +12,47 @@
  *
  * 摄像头采集的图像大小（可以用这个算数组长度） extern uint16_t img_width, img_height;
  * 
- * 显存地址： LCD_FRAME_BUFFER
- *
- * 摄像头DMA2配置方式：
- * #define FSMC_LCD_ADDRESS      LCD_FRAME_BUFFER
- * 把 FSMC_LCD_ADDRESS 的定义配成希望摄像头数据存的地方就行了
- * 缓存大小一定要用 img_width 和 img_height 计算
- * 
  */
  
 //**************************************************************
- 
-
 	
-//**************************************************************	
-	
-//图像缓存数组，第一行是原图，第二行是处理后的图
-uint8_t CAMERA_BUFFER_ARRAY[2 * IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节  *  2块区域
+//图像缓存数组,大小：宽度*长度*2字节
 
-uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT];	//第一块灰度空间，默认提供灰度数据
-uint8_t temp_array[IMG_WIDTH*IMG_HEIGHT];	//第二块灰度空间，作为运算临时存储空间
+uint8_t CAMERA_BUFFER_ARRAY1[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
+uint8_t CAMERA_BUFFER_ARRAY2[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
 
+uint8_t * CAMERA_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY1;	//当前数据指针
+uint8_t * DCMI_IN_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY2;	//当前输入缓存指针
+
+//灰度图像存储空间
+uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+
+//运算结果存储空间
+uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+
+//输出参数
 float length;	//偏差
 float speed;
 
-//所有取数据的函数以Get开头
-//所有存数据的函数以To开头
+//传输数据的模式
+unsigned char mode = 1;	
+
+//控制传输的flag
+u8 flag_Image = 0;
+u8 flag_Result = 0;
+u8 flag_Wave = 0;
+u8 flag_Sd = 0;
+u8 flag_Fps = 1;
+u8 flag_Mode = 1;
 
 //生成灰度矩阵
 void Creat_Gray(void)
 {
 	uint32_t r,g,b;
 	
-	uint16_t i;
+	uint16_t i,j;
+
+	uint8_t tmp[IMG_WIDTH];
 	
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
@@ -53,24 +62,22 @@ void Creat_Gray(void)
 		
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
-}
-
-void Creat_LCD(void)
-{
-	uint32_t i;
-	uint8_t rb,g;
 	
-	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
+	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
+	for(i=0;i<IMG_HEIGHT;i++)
 	{
-		rb = gray_array[i] / 8;
-		g = gray_array[i] / 4;
-		
-		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2+1] = (rb << 3) + ((g >> 3) & 0x07);	//低八位在后面，高八位在前面
-		CAMERA_BUFFER_ARRAY[IMG_HEIGHT*IMG_WIDTH*2 + i*2] = (g << 5) + rb;
+		for(j=0;j<IMG_WIDTH;j++)
+		{
+			tmp[j] = gray_array[i*IMG_WIDTH+j];
+			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
+			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp[j];
+		}
 	}
 }
 
-//1.获取单点灰度区数值
+//************************ 为算法提供数据源 ************************************
+
+//获取单点Gray区数值
 uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
@@ -82,8 +89,8 @@ uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
 	return gray_array[num/2];
 }
 
-//2.存储单点数据到暂存区
-void To_Temp(uint16_t row,uint16_t column,uint8_t gray)
+//存储单点数据到result区
+void To_Result(uint16_t row,uint16_t column,uint8_t gray)
 {
 	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
 	//行：row      范围：1 -- IMG_HEIGHT
@@ -91,232 +98,27 @@ void To_Temp(uint16_t row,uint16_t column,uint8_t gray)
 
 	uint32_t num;
 	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	temp_array[num/2] = gray;
+	result_array[num/2] = gray;
 }
 
-
-//3.获取单点暂存区数值
-uint8_t Get_Temp(uint16_t row,uint16_t column)
-{
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
-
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	return temp_array[num/2];
-}
-
-//4.存储单点数据到灰度区
-void To_Gray(uint16_t row,uint16_t column,uint8_t gray)
-{
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
-
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	gray_array[num/2] = gray;
-}
-
-/*******************************************************
-
-函数功能：图像算法
-
-入参：无
-
-出参：无
-
-说明：图像处理函数，可以使用Get_Gray(),To_Temp(),
-	Get_Temp(),To_Gray()是个函数作为数据源.
-
-*******************************************************/
-
-void Image_Fix(void)	//图像算法
-{
-//	uint32_t i,j,place,mid,start,end=0;
-//	float a,b,c,d,e,threhold,bias=0;
-//	
-//	
-//	
-//	for(i = 2;i<IMG_HEIGHT;i++)
-//	{
-//		for(j = 2;j<IMG_WIDTH;j++)
-//		{
-//			a=(Get_Gray(i-1,j-1)+Get_Gray(i,j-1)+Get_Gray(i+1,j-1))-(Get_Gray(i-1,j+1)+Get_Gray(i,j-1)+Get_Gray(i+1,j+1));
-//			a=ABS(a);
-//			b=(Get_Gray(i-1,j-1)+Get_Gray(i-1,j)+Get_Gray(i-1,j+1))-(Get_Gray(i+1,j-1)+Get_Gray(i+1,j)+Get_Gray(i+1,j+1));
-//			b=ABS(b);
-//			if (a>b)
-//				{ c=a;}
-//			else 
-//				{c=b;}
-//			To_Temp(i,j,c);
-//		}
-//	}
-
-
-//	
-//	//提取中线过程
-//	// 最后一行确立前两点大小
-//	if (Get_Temp(IMG_HEIGHT-1,1)>=Get_Temp(IMG_HEIGHT-1,2))
-//		{c=Get_Temp(IMG_HEIGHT-1,1);
-//		 d=Get_Temp(IMG_HEIGHT-1,2);}
-//    else
-//		{c=Get_Temp(IMG_HEIGHT-1,2);
-//		 d=Get_Temp(IMG_HEIGHT-1,1);} //c取较大，d取较小
-//		
-//	//依次对比最后一行的大小，取最大最小两点
-//		 for (i=2;i<=IMG_WIDTH;i++)
-//		{
-//	        if (Get_Temp(IMG_HEIGHT-1,i)<=d)
-//			{d=Get_Temp(IMG_HEIGHT-1,i);}
-//			if (Get_Temp(IMG_HEIGHT-1,i)>=c)
-//			{c=Get_Temp(IMG_HEIGHT-1,i);}
-//		}	
-//		threhold=(c-d); //最后一行的阈值为（最大值-最小值）的四分之一
-//		
-//	for (i=1;i<=IMG_HEIGHT;i++)
-//		{
-//			for(j=1;j<=IMG_WIDTH;j++)
-//			{
-//				if(Get_Temp(i,j)<=(threhold/2))
-//				{
-//				To_Temp(i,j,0);
-//				}
-//				else
-//				{
-//				To_Temp(i,j,255);
-//				}
-//			}
-//		}
-//	
-//			for(j=1;j<IMG_WIDTH;j++)
-//			{
-//			if ((Get_Temp(IMG_HEIGHT-1,j)-Get_Temp(IMG_HEIGHT-1,j+1))==255)
-//				{
-//				e=e+j;
-//				mid=mid+1;
-//				if(mid==2)
-//					{
-//						break;
-//					}
-//				}
-//			}
-//			place=(uint32_t)(e/2);			
-//			
-//			for(i=IMG_HEIGHT-2;i>2;i--)
-//			{
-//				for(j=place;j<IMG_WIDTH;j++)
-//				{
-//				if (Get_Temp(i,j)-Get_Temp(i,j+1)==255)
-//					{
-//					c=j;
-//						break;
-//					}
-//				}
-//				
-//				for(j=place;j>1;j--)
-//				{
-//				if (Get_Temp(i,j)-Get_Temp(i,j-1)==255)
-//					{
-//					d=j;
-//						break;
-//					}
-//				}
-//				
-//				place=(uint32_t)((c+d)/2);
-//				for (j=2;j<IMG_WIDTH;j++)
-//				{
-//				if(j==place)
-//					{
-//						To_Gray(i,j,255);
-//					}
-//				else
-//					{
-//						To_Gray(i,j,0);
-//					}
-//					if(i==(IMG_HEIGHT/2))
-//						{if (j==(IMG_WIDTH/2))
-//							{bias=place;}
-//						}
-//					if(i==IMG_HEIGHT-2)
-//						{a=place;}
-//					if(i==(IMG_HEIGHT-2))
-//						{a=place;}
-//					if(i==3)
-//						{b=place;}
-//				}
-//				
-//			}
-//			length=(float)(bias-(IMG_WIDTH/2));
-//			speed=atan((b-a)/(IMG_HEIGHT-5))*(180/3.14);
-}
-
-
-
-
-uint8_t panduanshuju[3];
-uint8_t count=0;
-uint8_t dif1,dif2,dif3,final_bias=0;
-void Determin(void)
-{
-	uint8_t Flag=0;
-	panduanshuju[count]=length;
-	count=count+1;
-	if (count>2)
-		{
-			count=0;
-			Flag=1;
-		}	
-	if(Flag==1)
-	{
-		dif1=abs(panduanshuju[0]-panduanshuju[1]);
-		dif2=abs(panduanshuju[0]-panduanshuju[2]);
-		dif3=abs(panduanshuju[2]-panduanshuju[1]);
-		if(count==0)
-		{
-			if(dif1<10)
-			{
-				if(dif2<20)
-				{
-					if(dif3<10)
-					{
-						final_bias=(panduanshuju[0]+panduanshuju[1]+panduanshuju[2]);
-					}
-				}
-			}
-		}
-		if(count==1)
-		{
-			if(dif2<10)
-			{
-				if(dif1<20)
-				{
-					if(dif3<10)
-					{
-						final_bias=(panduanshuju[0]+panduanshuju[1]+panduanshuju[2]);
-					}
-				}
-			}
-		}
-		if(count==2)
-		{
-			if(dif1<10)
-			{
-				if(dif3<20)
-				{
-					if(dif2<10)
-					{
-						final_bias=(panduanshuju[0]+panduanshuju[1]+panduanshuju[2]);
-					}
-				}
-			}
-		}
-	}
-
-}
 //************** 输出信息 ************************************************
+
+//将数据传送到对外端口
+void Data_Output(u8 ch)
+{
+	#ifdef __USART_DISPLAY
+
+		USART2_Send(ch);
+	
+	#endif
+	
+	#ifdef __NRF_DISPLAY
+		if(NRF24L01_State)
+		{
+			NRF_Send(ch);	//NRF发送
+		}
+	#endif
+}
 
 //显示图像，配合山外多功能调试助手
 void Display_Image(void)
@@ -348,46 +150,34 @@ void Display_Image(void)
 	
 }
 
-//显示矩阵，直接用串口调试助手查看
-void Display_Matrix(void)
+//显示图像，配合山外多功能调试助手
+void Display_Result(void)
 {
-	uint32_t i,j;
-	uint8_t ch,tmp;
+	uint32_t i;
+	uint8_t ch;
+	
+	//发送包头
+	ch = 0x02;
+	Data_Output(ch);
+
+	ch = 0xFD;
+	Data_Output(ch);
+
 	
 	//发送图像
-	for(i = 0 ; i<IMG_HEIGHT; i++ )	//行扫描
-	{
-		for(j = 0;j<IMG_WIDTH;j++)	//列扫描
-		{
-			ch = gray_array[i];
-		
-			tmp = ch/100;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ch/10;
-			tmp = tmp%10;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ch%10;
-			tmp = tmp%10;
-			tmp = tmp + 0x30;	//转ASCII码
-			Data_Output(tmp);
-			
-			tmp = ',';
-			Data_Output(tmp);
-			
-		}
-		ch = '\r';Data_Output(ch);
-		ch = '\n';Data_Output(ch);
+	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
+	{		
+		ch = result_array[i];
+		Data_Output(ch);
 	}
 	
-	ch = '\r';Data_Output(ch);
-	ch = '\n';Data_Output(ch);
+	//发送包尾
+	ch = 0xFD;
+	Data_Output(ch);
 	
-	ch = '\r';Data_Output(ch);
-	ch = '\n';Data_Output(ch);
+	ch = 0x02;
+	Data_Output(ch);
+	
 }
 
 //float转4个unsigned char
@@ -444,203 +234,144 @@ void Display_Wave(void)
 	ch = 0x03;
 	Data_Output(ch);
 	
-	
 }
 
-
-//******************** LCD显示内容 *********************************************************************
-
-//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef __LCD_DISPLAY
-
-//非DMA方式显示
-void Camera_Buffer_To_Lcd_Buffer(void)
+void Send_Parameter_Fps(void)
 {
-	int i,j;
+	uint8_t ch;
+	unsigned char a[4];
 	
-	//原图+运算后图（（IMG_HEIGHT*2） * IMG_WIDTH）
-	for(i = 0;i<IMG_HEIGHT*2;i++)
+	ch = 0x04;
+	Data_Output(ch);
+	ch = 0xFB;
+	Data_Output(ch);
+	
+	//发送fps
+	float_char(fps,a);
+	ch = a[0];
+	Data_Output(ch);
+	ch = a[1];
+	Data_Output(ch);
+	ch = a[2];
+	Data_Output(ch);	
+	ch = a[3];
+	Data_Output(ch);	
+	
+	//发送包尾
+	ch = 0xFB;
+	Data_Output(ch);
+	ch = 0x04;
+	Data_Output(ch);
+}
+
+void Send_Parameter_Mode(void)
+{
+	uint8_t ch;
+	
+	ch = 0x05;
+	Data_Output(ch);
+	ch = 0xFA;
+	Data_Output(ch);
+	
+	//发送mode
+	ch = mode;
+	Data_Output(ch);
+	
+	//发送包尾
+	ch = 0xFA;
+	Data_Output(ch);
+	ch = 0x05;
+	Data_Output(ch);
+}
+
+void Data_Output_Ctrl(unsigned char cmd)
+{
+	switch(cmd)
 	{
-		for(j = 0;j<IMG_WIDTH*2;j=j+1)
-		{
-			LCD_FRAME_BUFFER_ARRAY[i*1600+j] = CAMERA_BUFFER_ARRAY[i*IMG_WIDTH*2+j];
-		}
-			
-	}
-	
-}
-
-
-void DMA_AtoB_Config(uint32_t DMA_Memory_A_Addr,uint32_t DMA_Memory_B_Addr)
-{
-	DMA_InitTypeDef  DMA_InitStructure;
-
-	/* 使能DMA时钟 */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-	/* 复位初始化DMA数据流 */
-	DMA_DeInit(DMA2_Stream0);
-	/* 确保DMA数据流复位完成 */
-	while (DMA_GetCmdStatus(DMA2_Stream0) != DISABLE){}
-
-	DMA_InitStructure.DMA_Channel = DMA_Channel_0;  
-	DMA_InitStructure.DMA_PeripheralBaseAddr = DMA_Memory_A_Addr;
-	DMA_InitStructure.DMA_Memory0BaseAddr = DMA_Memory_B_Addr;
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToMemory;
-	DMA_InitStructure.DMA_BufferSize = IMG_WIDTH;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Enable;
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh ;
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;     
-	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
-	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_INC8;
-	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-
-	DMA_Init(DMA2_Stream0, &DMA_InitStructure); 
-		
-	DMA_ClearFlag(DMA2_Stream0,DMA_FLAG_TCIF0);
-		
-	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 
-		
-	DMA_Cmd(DMA2_Stream0, ENABLE);
-	while(DMA_GetCmdStatus(DMA2_Stream1) != ENABLE){}
-  
-}
-
-void DMA2_Stream0_Init(void)
-{
-	NVIC_InitTypeDef NVIC_InitStructure; 
-	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-	/* 配置中断 */
-//	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-	
-	/* 配置中断源 */
-	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn ;//DMA数据流中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-
-	DMA_ITConfig(DMA2_Stream0,DMA_IT_TC,ENABLE); 	
-	
-}
-
-
-//********************* 在LCD上绘图 *****************************************************************
-
-//显示偏移距离和水平速度
-void Display_data(void)
-{	
-	LCD_SetColors(LCD_COLOR_WHITE,TRANSPARENCY);
-//	LCD_ClearLine(LINE(11));
-//	LCD_ClearLine(LINE(14));
-	sprintf((char*)dispBuf, "            ");
-	LCD_DisplayStringLine_EN_CH(LINE(11),dispBuf);
-	LCD_DisplayStringLine_EN_CH(LINE(14),dispBuf);
-	
-	sprintf((char*)dispBuf, "%.2f", length);
-	LCD_DisplayStringLine_EN_CH(LINE(10),(uint8_t*)"偏移距离：");
-	LCD_DisplayStringLine_EN_CH(LINE(11),dispBuf);
-	sprintf((char*)dispBuf, "%.2f", speed);
-	LCD_DisplayStringLine_EN_CH(LINE(13),(uint8_t*)"水平速度：");
-	LCD_DisplayStringLine_EN_CH(LINE(14),dispBuf);
-}
-
-
-
-//绘制图形曲线
-void Draw_Graph()
-{
-	/*
-	
-	x轴长度540
-	y轴长度200（±100）
-	
-	每行画90个点，每个点间隔6个像素
-	
-	*/
-	
-	static int x = 0;
-	int y1,y2 = 0;
-
-	if(x == 0)
-	{
-		x = 0;
-		
-		//清屏
-		LCD_SetColors(LCD_COLOR_BLACK, TRANSPARENCY);
-		LCD_DrawFullRect(235,0,545,445);
-		LCD_SetColors(LCD_COLOR_WHITE, TRANSPARENCY);
-		
-		//显示图例
-		LCD_DisplayStringLine_EN_CH(LINE(1),(uint8_t*)"                length");
-		LCD_DisplayStringLine_EN_CH(LINE(10),(uint8_t*)"                speed");
-		
-		//画坐标系
-		
-		//横轴
-		LCD_DrawLine(240, 109, 540, 0);
-		LCD_DrawLine(240, 110, 540, 0);
-		LCD_DrawLine(240, 111, 540, 0);
-		
-		LCD_DrawLine(240, 329, 540, 0);
-		LCD_DrawLine(240, 330, 540, 0);
-		LCD_DrawLine(240, 331, 540, 0);
-		
-		//纵轴
-		LCD_DrawLine(239, 10, 200, 1);
-		LCD_DrawLine(240, 10, 200, 1);
-		LCD_DrawLine(241, 10, 200, 1);
-		
-		LCD_DrawLine(239, 230, 200, 1);
-		LCD_DrawLine(240, 230, 200, 1);
-		LCD_DrawLine(241, 230, 200, 1);
-		
-
-	}
-	
-	//横轴累加
-	x++;
-	
-	
-	
-	//位移
-	y1 = 110 + length;
-	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
-	LCD_DrawFullCircle(240 + x*6,(uint16_t)y1 ,2);
-	
-	//速度
-	y2 = 330 + speed;
-	LCD_SetColors(LCD_COLOR_BLUE2,TRANSPARENCY);
-	LCD_DrawFullCircle(240 + x*6,(uint16_t)y2 ,2);
-	
-	if(x>=89)
-	{
-		x = 0;
+		case 1:
+			flag_Image = 1;
+			break;
+		case 2:
+			flag_Image = 0;
+			break;
+		case 3:
+			flag_Result = 1;
+			break;
+		case 4:
+			flag_Result = 0;
+			break;
+		case 5:
+			flag_Wave = 1;
+			break;
+		case 6:
+			flag_Wave = 0;
+			break;
+		case 7:
+			flag_Fps = 1;
+			break;
+		case 8:
+			flag_Fps = 0;
+			break;
+		case 9:
+			flag_Sd = 1;
+			break;
+		case 10:
+			flag_Sd = 0;
+			break;
+		default:
+			break;
 	}
 }
 
-#endif
-
-void Data_Output(u8 ch)
+void Mode_Set(void)
 {
-	#ifdef __USART_DISPLAY
-//		//串口发送
-//		USART_SendData(DATA_OUT_USART, ch);					/* 发送一个字节数据到串口DEBUG_USART */
-//		while (USART_GetFlagStatus(DATA_OUT_USART, USART_FLAG_TXE) == RESET);	/* 等待发送完毕 */
-		USART2_Send(ch);
+	switch(mode)
+	{
+		case 0:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 1:
+			flag_Image = 1;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 2:
+			flag_Image = 0;
+			flag_Result = 1;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 3:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 1;
+			flag_Sd = 0;
+			break;
+		case 4:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 1;
+			break;
+		default:
+			break;
+	}
+}
+
+void Mode_Change(void)	//在按键中断中调用
+{
+	mode++;
+	if(mode>4)
+	{
+		mode = 0;
+	}
 	
-	#endif
-	
-	#ifdef __NRF_DISPLAY
-		if(NRF24L01_State)
-		{
-			NRF_Send(ch);	//NRF发送
-		}
-	#endif
+	Mode_Set();
+
 }
 
 void Image_Output(void)
@@ -651,51 +382,53 @@ void Image_Output(void)
 	if(!full_flag)
 	{
 		#if defined(__DISPLAY_IMAGE)
+			if(flag_Image)
+				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
 		
-			Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+		#endif
+		
+		#if defined(__DISPLAY_RESULT)
+		
+			if(flag_Result)
+				Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
+		
+		#endif
+		
 			
-		#elif defined(__DISPLAY_MATRIX)
+		#if defined(__DISPALY_WAVE)
 		
-			Display_Matrix();	//从串口输出矩阵，直接在串口调试助手上查看
+			if(flag_Wave)
+				Display_Wave();	//串口输出波形
+		
+		#endif
+		
+		
+		#if defined(__PARAMETER_FPS)
+		
+			if(flag_Fps)
+				Send_Parameter_Fps();
+		
+		#endif
 			
-		#elif defined(__DISPALY_WAVE)
-		
-			Display_Wave();	//串口输出波形
+		#if defined(__PARAMETER_MODE)
+			
+			if(flag_Mode)
+				Send_Parameter_Mode();
 		
 		#endif
 	}
-	
-
-	
-	//*******************************************************************
-	//LCD显示
-	#ifdef __LCD_DISPLAY
-	
-		#if defined(__DISPALY_DATA)
-		
-			Display_data();	//显示偏移距离和水平速度
-		
-		#endif
-		
-		#if defined(__DISPALY_GRAPH)
-		
-			Draw_Graph();	//绘制图形曲线
-		
-		#endif
-	
-		Creat_LCD();	//还原RGB565图像，存入显示缓冲
-		DMA_AtoB_Config(FSMC_LCD_ADDRESS,LCD_FRAME_BUFFER);		//用DMA把图像从缓存搬运到显存
-	
-	#endif
 	
 	//*******************************************************************
 	//SD存图
 	
 	#ifdef __SD_SAVE
 	
-		if(SD_State)	//如果SD卡挂载成功
+		if(flag_Sd)
 		{
-			TO_SDcard();    //SD卡
+			if(SD_State)	//如果SD卡挂载成功
+			{
+				TO_SDcard();    //SD卡
+			}
 		}
 		
 	#endif
@@ -703,21 +436,21 @@ void Image_Output(void)
 
 //*********************** 总执行函数 **********************************************
 
-uint8_t image_updata_flag = 0;
+uint8_t image_updata_flag = 0;		//新图像采集完成标志  0：新图没有采集完成    1：新图采集完成
+uint8_t processing_ready = 1;	//首次置1，因为一开始的时候没有图像，第一次无法启动运算
 void Image_Process(void)
 {
-	DCMI_CaptureCmd(ENABLE);			//读取一帧图像到缓存
 
-	//新写法
-	//延时1s 或 图像采集完成中断置位
-	image_updata_flag = 0;
-	Task_Delay[9] = 1000;
-	while(Task_Delay[9]!=0 && image_updata_flag == 0){}
+	//等待新图
+	while(!image_updata_flag){}
+	
+	image_updata_flag = 0;	//新图已经开始被使用，新图标志清零
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
-	
 	Image_Output();	//数据输出
+
+	processing_ready = 1;	//运算结束置1
 
 }
 

@@ -17,12 +17,53 @@
   
 #include "./usart/bsp_debug_usart.h"
 #include "include.h"
+#include "image_processing.h"
+
+//处理USART2接收到的信息
+void USART2_Receive_Data_Handle(u8 data)
+{
+	static int state = 0;
+	static unsigned char command = 0;
+
+	switch(state)
+	{
+		case 0:
+			if(data == 0xAA)	//帧头 0x01 0xFA
+				state = 1;
+			break;
+		case 1:
+			if(data == 0xAA)
+				state = 2;
+			else
+				state = 0;
+			break;
+		case 2:
+			command = data;		//临时存储指令
+			state = 3;
+			break;
+		case 3:
+			if(data == 0x01)
+				state = 4;
+			else
+				state = 0;
+			break;
+		case 4:
+			if(data == 0x01)
+			{
+				Data_Output_Ctrl(command);
+			}
+			state = 0;
+			break;
+		default:
+			break;
+	}
+}
 
 u8 TxBuffer2[4000];
 u16 TxCounter2=0;
 u16 cnt2=0;
 int full_flag = 0;
-	
+
 //配置USART2
 void USART2_Config(void)
 {
@@ -72,17 +113,34 @@ void USART2_Config(void)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_Init(USART2, &USART_InitStructure); 
 	USART_Cmd(USART2, ENABLE);
+	
+	//打开接收中断
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
 
-void USART2_IRQHandler(void)
+void Usart2_IRQ(void)
 {
-	//usart2发送完成中断
-	if(USART_GetITStatus(USART2,USART_IT_TXE )) 
-	{		
-		//发送数据
-		USART2->DR = TxBuffer2[TxCounter2++];
-		
+	u8 com_data;
+	
+	if(USART2->SR & USART_SR_ORE)//ORE中断
+	{
+		com_data = USART2->DR;
+	}
+
+	//接收中断
+	if( USART_GetITStatus(USART2,USART_IT_RXNE) )
+	{
+		USART_ClearITPendingBit(USART2,USART_IT_RXNE);//清除中断标志
+
+		com_data = USART2->DR;
+		USART2_Receive_Data_Handle(com_data);
+	}
+	//发送（进入移位）中断
+	if( USART_GetITStatus(USART2,USART_IT_TXE ) )
+	{
+				
+		USART2->DR = TxBuffer2[TxCounter2++]; //写DR清除中断标志          
 		//处理发送计数指针TxCounter2
 		if(TxCounter2>=4000)
 		{
@@ -94,9 +152,50 @@ void USART2_IRQHandler(void)
 			USART2->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
 			full_flag = 0;	//清除队满标志
 		}
-		
-//		USART_ClearITPendingBit(USART2,USART_IT_TXE);
+
+		//USART_ClearITPendingBit(USART2,USART_IT_TXE);
 	}
+}
+
+void USART2_IRQHandler(void)
+{
+	
+	Usart2_IRQ();
+	
+	
+//	u8 com_data;
+//	
+//	//usart2接收中断
+//	if( USART_GetITStatus(USART2,USART_IT_RXNE) )
+//	{
+//		USART_ClearITPendingBit(USART2,USART_IT_RXNE);//清除中断标志
+
+//		com_data = USART2->DR;
+//		
+//		//此处添加接收处理函数
+//		USART2_Receive_Data_Handle(com_data);
+//	}
+//	
+//	//usart2发送完成中断
+//	if(USART_GetITStatus(USART2,USART_IT_TXE )) 
+//	{		
+//		//发送数据
+//		USART2->DR = TxBuffer2[TxCounter2++];	//写DR清除中断标志位
+//		
+//		//处理发送计数指针TxCounter2
+//		if(TxCounter2>=4000)
+//		{
+//			TxCounter2=0;
+//		}
+//		
+//		if(TxCounter2 == cnt2)	//发送指针追上了输入指针
+//		{
+//			USART2->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
+//			full_flag = 0;	//清除队满标志
+//		}
+//		
+//		USART_ClearITPendingBit(USART2,USART_IT_TXE);
+//	}
 }
 
 void USART2_Send(unsigned char ch)

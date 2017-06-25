@@ -32,6 +32,7 @@
 #include "./camera/bsp_ov5640.h"
 #include "./systick/bsp_SysTick.h"
 #include "./key/bsp_exti.h"
+#include "image_processing.h"
 #include "include.h"
 
 extern unsigned int Task_Delay[];
@@ -173,54 +174,28 @@ extern uint16_t lcd_width, lcd_height;
 extern uint16_t img_width, img_height;
 extern uint8_t fps_temp;
 
-
-//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef __LCD_DISPLAY
-
-//缓存 --> 显存
-uint16_t line_num0 =1;
-void DMA2_Stream0_IRQHandler(void)
-{
-	if(  DMA_GetITStatus(DMA2_Stream0,DMA_IT_TCIF0) == SET )    
-	{
-		/*行计数*/
-		line_num0 = line_num0 + 1;
-
-		if(line_num0 >= IMG_HEIGHT * 2 +1)
-		{
-			/*传输完一帧,计数复位*/
-			line_num0=1;
-		}
-		else  /*DMA 一行一行传输*/
-		{  
-			//FSMC_LCD_ADDRESS 是 摄像头采集图像的缓存区地址
-			DMA_AtoB_Config(FSMC_LCD_ADDRESS + lcd_width*2*(line_num0-1),LCD_FRAME_BUFFER+(1600*(line_num0-1)));
-		}
-
-	}
-	DMA_ClearITPendingBit(DMA2_Stream0,DMA_IT_TCIF0);
-}
-
-#endif
-
 //DCMI --> 缓存
-static uint16_t line_num =0;	//记录传输了多少行
+//static uint16_t line_num =0;	//记录传输了多少行
 void DMA2_Stream1_IRQHandler(void)
 {
   if(  DMA_GetITStatus(DMA2_Stream1,DMA_IT_TCIF1) == SET )    
   {
-		/*行计数*/
-		line_num++;
+//		/*行计数*/
+//		line_num++;
 
-		if(line_num==img_height)
-		{
-			/*传输完一帧,计数复位*/
-			line_num=0;
-		}
+//		if(line_num==img_height)
+//		{
+//			/*传输完一帧,计数复位*/
+//			line_num=0;
+//		}
 		
 		/*DMA 一行一行传输*/
-		OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_width*2*(lcd_height-line_num-1)),img_width*2/4);
-
+		//OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_width*2*(lcd_height-line_num-1)),img_width*2/4);
+		//OV5640_DMA_Config(FSMC_LCD_ADDRESS,img_height*img_width*2/4);	//一次传输整张图，DMA的最大长度是2^16（猜的，长了会有BUG）
+	  
+		//DMA的数据默认进入DCMI_IN_BUFFER_ARRAY对应区域
+		//OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);
+	  
 		DMA_ClearITPendingBit(DMA2_Stream1,DMA_IT_TCIF1);
 	}
 }
@@ -230,36 +205,49 @@ void DMA2_Stream1_IRQHandler(void)
 //表示帧捕获结束，也就是一帧图像传输完成，全部数据已经通过DMA传输到显存中，DCMI->CR被清零，此时可以调用DCMI_CaptureCmd(ENABLE)读取下一帧
 void DCMI_IRQHandler(void)	
 {
-
+	uint8_t * tmp;
+	
 	if(  DCMI_GetITStatus (DCMI_IT_FRAME) == SET )    
 	{
 		/*传输完一帧，计数复位*/
-		line_num=0;
+//		line_num=0;
 		
 		fps_temp++; //帧率计数
 		
-		image_updata_flag = 1;	//表示一帧图像已经全部存入缓存
+		//进到这里了，就表示已经采完了，满足采集完毕条件
+		
+		//运算已经结束，则对换空间
+		if(processing_ready)
+		{
+			processing_ready = 0;	//清零运算完成标志位，等待下次运算完成
+			
+			//空间对换
+			tmp = DCMI_IN_BUFFER_ARRAY;
+			DCMI_IN_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY;
+			CAMERA_BUFFER_ARRAY = tmp;
+			
+			//换完之后新图就位，开启新图完成标志位
+			//表示 CAMERA_BUFFER_ARRAY 区域中已经提供了一张新图用于运算
+			image_updata_flag = 1;
+		}
+		
+		OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//空间交换已经完成后，再开启新的DMA（保证DMA的对于区域已经被更新）
 		
 		DCMI_ClearITPendingBit(DCMI_IT_FRAME); 
 	}
 }
 
 
-extern int flag;
 //KEY1外部中断
-void KEY1_IRQHandler(void)
+void KEY1_IRQHandler(void)	//核心板上的按钮
 {
 	//确保是否产生了EXTI Line中断
 	if(EXTI_GetITStatus(KEY1_INT_EXTI_LINE) != RESET) 
 	{
-		
 //		printf("Key1\n");
 		
-		if(flag != 0)
-		{
-			Image_Process();
-		}
-
+		Mode_Change();
+		
 		//清除中断标志位
 		EXTI_ClearITPendingBit(KEY1_INT_EXTI_LINE);
 	}  
@@ -271,10 +259,6 @@ void KEY2_IRQHandler(void)
 	//确保是否产生了EXTI Line中断
 	if(EXTI_GetITStatus(KEY2_INT_EXTI_LINE) != RESET) 
 	{
-		if(flag == 1)
-			flag = 0;
-		else
-			flag = 1;
 			
 //		printf("Key2\n");
 		
@@ -282,6 +266,8 @@ void KEY2_IRQHandler(void)
 		EXTI_ClearITPendingBit(KEY2_INT_EXTI_LINE);     
 	}  
 }
+
+
 
 
 /**

@@ -35,7 +35,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "./systick/bsp_SysTick.h"
-#include "./lcd/bsp_lcd.h"
 #include "image_processing.h"
 
 #define Delay(ms)  Delay_ms(ms)

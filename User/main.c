@@ -21,7 +21,6 @@
 
 #include "./usart/bsp_debug_usart.h"
 #include "./sdram/bsp_sdram.h"
-#include "./lcd/bsp_lcd.h"
 #include "./camera/bsp_ov5640.h"
 #include "./systick/bsp_SysTick.h"
 #include "./camera/ov5640_AF.h"
@@ -31,27 +30,15 @@
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
 
-//LCD显存（定义在最前边能够消除DMA2D工作不正常错误）
-uint8_t LCD_FRAME_BUFFER_ARRAY[BUFFER_OFFSET * 2] __EXRAM;
-
 /*简单任务管理*/
 uint32_t Task_Delay[NumOfTask];
-
-uint8_t dispBuf[100];
-OV5640_IDTypeDef OV5640_Camera_ID;
 
 uint8_t fps_temp = 0;
 float fps = 0;
 
 void My_Camera_Init(void)
 {
-//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-#ifdef __LCD_DISPLAY
-	
-	printf("\r\nSTM32F429 DCMI 驱动OV5640例程\r\n");
-	LCD_DisplayStringLine_EN_CH(LINE(19),(uint8_t*) "OV5640图像处理测试，硬件版本：旧版F429");
-	
-#endif
+	OV5640_IDTypeDef OV5640_Camera_ID;
 	
 	/* 初始化摄像头GPIO及IIC */
 	OV5640_HW_Init();   
@@ -61,57 +48,17 @@ void My_Camera_Init(void)
 
 	if(OV5640_Camera_ID.PIDH  == 0x56)
 	{
-//		sprintf((char*)dispBuf, "              OV5640 摄像头,ID:0x%x", OV5640_Camera_ID.PIDH);
-//		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*)dispBuf);
 		CAMERA_DEBUG("%x %x\r\n",OV5640_Camera_ID.PIDH ,OV5640_Camera_ID.PIDL);
 	}
 	else
 	{
-		//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-		#ifdef __LCD_DISPLAY
-		
-		LCD_SetTextColor(LCD_COLOR_RED);
-		LCD_DisplayStringLine_EN_CH(LINE(0),(uint8_t*) "         没有检测到OV5640，请重新检查连接。");
-		CAMERA_DEBUG("没有检测到OV5640摄像头，请重新检查连接。\r\n");
-		
-		#endif
-		
 		CAMERA_DEBUG("未检测到摄像头\r\n");
-
 		while(1);  
 	}
 
 	OV5640_Init();			//DCMI  DMA  INTERRUPT
 	OV5640_RGB565Config();
 	OV5640_AUTO_FOCUS();
-
-	//使能DCMI采集数据
-	DCMI_Cmd(ENABLE); 
-//	DCMI_CaptureCmd(ENABLE); 	
-}
-
-void My_LCD_Init(void)
-{
-	/*初始化液晶屏*/
-	LCD_Init();
-	LCD_LayerInit();		//显示层配置，包括显存地址配置
-	LTDC_Cmd(ENABLE);
-	
-	/*把背景层刷黑色*/
-	LCD_SetLayer(LCD_BACKGROUND_LAYER);  
-	LCD_SetTransparency(0xFF);
-	LCD_Clear(LCD_COLOR_BLACK);
-	
-	/*初始化后默认使用前景层*/
-	LCD_SetLayer(LCD_FOREGROUND_LAYER); 
-	/*默认设置不透明	，该函数参数为不透明度，范围 0-0xff ，0为全透明，0xff为不透明*/
-	LCD_SetTransparency(0xFF);
-	LCD_Clear(TRANSPARENCY);
-	
-//	LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
-
-//	LCD_ClearLine(LINE(18));
-//  LCD_DisplayStringLine_EN_CH(LINE(18),(uint8_t* )" 模式:WVGA 800x480");
 	
 }
 
@@ -167,8 +114,8 @@ void My_RAM_TEST(void)
 	printf("\r\n");
 	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
 	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
-	printf("全局LCD_FRAME_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&LCD_FRAME_BUFFER_ARRAY);
-	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
+
+//	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
 	
 	
 //	LCD_FRAME_BUFFER_ARRAY
@@ -242,7 +189,6 @@ u8 SDCard_Init(void)
 
 extern  uint32_t CurrentFrameBuffer;
 
-int flag = 0;	//用于按键中断
 int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
 {
@@ -254,29 +200,24 @@ int main(void)
 	My_RAM_TEST();		//内存分配情况测试
 	EXTI_Key_Config();	//初始化外部中断按键
 	NRF24L01_Init();	//NRF24L01
-
-	#ifdef __LCD_DISPLAY	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-		My_LCD_Init();		//初始化LCD（包括DMA2D初始化）
-	#endif
-	
 	My_Camera_Init();	//初始化OV5640
-	
-	#ifdef __LCD_DISPLAY	//如果定义__LCD_DISPLAY（include.h中），就编译LCD代码
-		DMA2_Stream0_Init();	//DMA2_Stream0初始化 （缓存 -> 显存（此处只是初始化，并没有开启））
-	#endif
 	
 	#ifdef __SD_SAVE
 		SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
 	#endif
 	
+	//开启传输
+	OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//开启第一次传输
+	DCMI_Cmd(ENABLE); 
+	DCMI_CaptureCmd(ENABLE);
+	
+	Mode_Set();	//设置数据传输模式
+	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{
-		//全速更新
-		if(flag == 0)
-		{
-			Image_Process();	//图像处理函数，包括读图和写入显存
-		}
+		
+		Image_Process();	//图像处理函数，包括读图和写入显存
 		
 		//波特率计算
 		if(Task_Delay[0]==0)
@@ -286,25 +227,9 @@ int main(void)
 			fps = fps_temp/5.0f;
 			fps_temp =0;	//重置
 			
-			#ifdef __LCD_DISPLAY
-				#ifdef __DISPLAY_FRAME_RATE	//显示帧率，默认不显示	
-				
-					/*输出帧率*/
-					LCD_SetColors(LCD_COLOR_RED,TRANSPARENCY);
-					sprintf((char*)dispBuf, "      ");
-					LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-					sprintf((char*)dispBuf, " %.1f/s", fps);
-					LCD_DisplayStringLine_EN_CH(LINE(17),dispBuf);
-				
-				#endif
-			#endif
-			
 		}
 	}
 }
-
-
-
 
 /*********************************************END OF FILE**********************/
 

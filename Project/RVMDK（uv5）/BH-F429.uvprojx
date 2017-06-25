@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F429_439xx,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF;..\..\User\imagefix</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -645,11 +645,6 @@
               <FilePath>..\..\User\image_processing.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_lcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\lcd\bsp_lcd.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_ov5640.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\camera\bsp_ov5640.c</FilePath>
@@ -658,11 +653,6 @@
               <FileName>bsp_sdram.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sdram\bsp_sdram.c</FilePath>
-            </File>
-            <File>
-              <FileName>fonts.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\font\fonts.c</FilePath>
             </File>
             <File>
               <FileName>bsp_debug_usart.c</FileName>
@@ -698,6 +688,11 @@
               <FileName>bsp_spi_nrf.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\NRF\bsp_spi_nrf.c</FilePath>
+            </File>
+            <File>
+              <FileName>image_fix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\imagefix\image_fix.c</FilePath>
             </File>
           </Files>
         </Group>
