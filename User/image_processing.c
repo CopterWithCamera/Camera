@@ -35,14 +35,14 @@ float length;	//偏差
 float speed;
 
 //传输数据的模式
-unsigned char mode = 0;	
+unsigned char mode = 1;	
 
 //控制传输的flag
 u8 flag_Image = 0;
 u8 flag_Result = 0;
 u8 flag_Wave = 0;
-u8 flag_Fps = 1;
 u8 flag_Sd = 0;
+u8 flag_Fps = 1;
 u8 flag_Mode = 1;
 
 //生成灰度矩阵
@@ -50,7 +50,9 @@ void Creat_Gray(void)
 {
 	uint32_t r,g,b;
 	
-	uint16_t i;
+	uint16_t i,j;
+
+	uint8_t tmp[IMG_WIDTH];
 	
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
@@ -59,6 +61,17 @@ void Creat_Gray(void)
 		b = (CAMERA_BUFFER_ARRAY[i] & 0x1F) * 8;
 		
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
+	}
+	
+	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
+	for(i=0;i<IMG_HEIGHT;i++)
+	{
+		for(j=0;j<IMG_WIDTH;j++)
+		{
+			tmp[j] = gray_array[i*IMG_WIDTH+j];
+			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
+			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp[j];
+		}
 	}
 }
 
@@ -310,14 +323,8 @@ void Data_Output_Ctrl(unsigned char cmd)
 	}
 }
 
-void Mode_Change(void)	//在按键中断中调用
+void Mode_Set(void)
 {
-	mode++;
-	if(mode>4)
-	{
-		mode = 0;
-	}
-	
 	switch(mode)
 	{
 		case 0:
@@ -353,6 +360,18 @@ void Mode_Change(void)	//在按键中断中调用
 		default:
 			break;
 	}
+}
+
+void Mode_Change(void)	//在按键中断中调用
+{
+	mode++;
+	if(mode>4)
+	{
+		mode = 0;
+	}
+	
+	Mode_Set();
+
 }
 
 void Image_Output(void)

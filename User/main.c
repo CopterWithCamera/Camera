@@ -211,6 +211,8 @@ int main(void)
 	DCMI_Cmd(ENABLE); 
 	DCMI_CaptureCmd(ENABLE);
 	
+	Mode_Set();	//设置数据传输模式
+	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{

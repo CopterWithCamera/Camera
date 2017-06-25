@@ -43,5 +43,6 @@ void Image_Process(void);
 
 void Data_Output_Ctrl(unsigned char cmd);	//读取输入控制命令
 void Mode_Change(void);						//按键控制切换传输内容
+void Mode_Set(void);
 
 #endif /* __IMAGE_PROCESSING_H */
