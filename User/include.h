@@ -23,7 +23,7 @@
 #define __DISPLAY_RESULT	//运算结果
 #define __DISPALY_WAVE		//显示波形
 #define __PARAMETER_FPS		//发送FPS 
-#define __PARAMETER_MODE		//发送MODE
+#define __PARAMETER_MODE	//发送MODE
 
 //======== 输出串口选择 ==============
 

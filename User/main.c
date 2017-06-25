@@ -59,10 +59,7 @@ void My_Camera_Init(void)
 	OV5640_Init();			//DCMI  DMA  INTERRUPT
 	OV5640_RGB565Config();
 	OV5640_AUTO_FOCUS();
-
-	//使能DCMI采集数据
-	DCMI_Cmd(ENABLE); 
-//	DCMI_CaptureCmd(ENABLE); 	
+	
 }
 
 
@@ -118,7 +115,7 @@ void My_RAM_TEST(void)
 	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
 	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
 
-	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
+//	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
 	
 	
 //	LCD_FRAME_BUFFER_ARRAY
@@ -192,7 +189,6 @@ u8 SDCard_Init(void)
 
 extern  uint32_t CurrentFrameBuffer;
 
-int flag = 0;	//用于按键中断
 int SD_State = 0;	//SD卡状态 0 -- 挂载失败  1 -- 挂载成功
 int main(void)
 {
@@ -210,14 +206,16 @@ int main(void)
 		SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
 	#endif
 	
+	//开启传输
+	OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//开启第一次传输
+	DCMI_Cmd(ENABLE); 
+	DCMI_CaptureCmd(ENABLE);
+	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{
-		//全速更新
-		if(flag == 0)
-		{
-			Image_Process();	//图像处理函数，包括读图和写入显存
-		}
+		
+		Image_Process();	//图像处理函数，包括读图和写入显存
 		
 		//波特率计算
 		if(Task_Delay[0]==0)

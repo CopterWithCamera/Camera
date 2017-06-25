@@ -710,8 +710,8 @@ void OV5640_Init(void)
 	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_DCMI, ENABLE);
 
 	/* DCMI 配置*/ 	
-	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_SnapShot;
-//	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_Continuous;
+//	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_SnapShot;
+	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_Continuous;
 	DCMI_InitStructure.DCMI_SynchroMode = DCMI_SynchroMode_Hardware;
 	DCMI_InitStructure.DCMI_PCKPolarity = DCMI_PCKPolarity_Rising;
 	DCMI_InitStructure.DCMI_VSPolarity = DCMI_VSPolarity_High;
@@ -724,18 +724,19 @@ void OV5640_Init(void)
 	
 	//开始传输，从后面开始一行行扫描上来，实现数据翻转
 	//dma_memory 以16位数据为单位， dma_bufsize以32位数据为单位(即像素个数/2)
-	OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_height-1)*(lcd_width)*2,img_width*2/4); 	
+//	OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_height-1)*(lcd_width)*2,img_width*2/4); 	
+	
 
 	/* 配置中断 */
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
-	/* 配置中断源 */
-	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream1_IRQn ;//DMA数据流中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	DMA_ITConfig(DMA2_Stream1,DMA_IT_TC,ENABLE); 	
+//	/* 配置中断源 */
+//	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream1_IRQn ;//DMA数据流中断
+//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//	NVIC_Init(&NVIC_InitStructure);
+//	DMA_ITConfig(DMA2_Stream1,DMA_IT_TC,ENABLE); 	
 	
  	/* 配置帧中断，接收到帧同步信号就进入中断 */
 	NVIC_InitStructure.NVIC_IRQChannel = DCMI_IRQn ;	//帧中断
@@ -743,7 +744,7 @@ void OV5640_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	DCMI_ITConfig (DCMI_IT_FRAME,ENABLE);	
+	DCMI_ITConfig(DCMI_IT_FRAME,ENABLE);	
 
 }
 

@@ -17,7 +17,12 @@
 //**************************************************************
 	
 //图像缓存数组,大小：宽度*长度*2字节
-uint8_t CAMERA_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
+
+uint8_t CAMERA_BUFFER_ARRAY1[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
+uint8_t CAMERA_BUFFER_ARRAY2[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
+
+uint8_t * CAMERA_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY1;	//当前数据指针
+uint8_t * DCMI_IN_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY2;	//当前输入缓存指针
 
 //灰度图像存储空间
 uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
@@ -413,19 +418,20 @@ void Image_Output(void)
 //*********************** 总执行函数 **********************************************
 
 uint8_t image_updata_flag = 0;		//新图像采集完成标志  0：新图没有采集完成    1：新图采集完成
+uint8_t processing_ready = 1;	//首次置1，因为一开始的时候没有图像，第一次无法启动运算
 void Image_Process(void)
 {
-	DCMI_CaptureCmd(ENABLE);			//读取一帧图像到缓存
 
-	//新写法
-	//延时1s 或 图像采集完成中断置位
-	image_updata_flag = 0;
-	Task_Delay[9] = 1000;
-	while(Task_Delay[9]!=0 && image_updata_flag == 0){}
+	//等待新图
+	while(!image_updata_flag){}
+	
+	image_updata_flag = 0;	//新图已经开始被使用，新图标志清零
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	Image_Fix();	//图像处理函数
 	Image_Output();	//数据输出
+
+	processing_ready = 1;	//运算结束置1
 
 }
 
