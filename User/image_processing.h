@@ -32,6 +32,7 @@ void To_Result(uint16_t row,uint16_t column,uint8_t gray);	//向Result区存入数据
 extern uint8_t image_updata_flag;	//新图像采集完成标志  0：新图没有采集完成    1：新图采集完成
 void Image_Process(void);
 
-
+void Data_Output_Ctrl(unsigned char cmd);	//读取输入控制命令
+void Mode_Change(void);						//按键控制切换传输内容
 
 #endif /* __IMAGE_PROCESSING_H */

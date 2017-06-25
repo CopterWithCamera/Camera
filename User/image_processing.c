@@ -29,6 +29,17 @@ uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
 float length;	//偏差
 float speed;
 
+//传输数据的模式
+unsigned char mode = 0;	
+
+//控制传输的flag
+u8 flag_Image = 0;
+u8 flag_Result = 0;
+u8 flag_Wave = 0;
+u8 flag_Fps = 1;
+u8 flag_Sd = 0;
+u8 flag_Mode = 1;
+
 //生成灰度矩阵
 void Creat_Gray(void)
 {
@@ -74,45 +85,6 @@ void To_Result(uint16_t row,uint16_t column,uint8_t gray)
 
 //************** 输出信息 ************************************************
 
-void Data_Output_Ctrl(u8 num,u8 cmd)	//num：指令号		cmd：指令内容
-{
-	switch(num)
-	{
-		case 1:			//图像传输控制
-			if(cmd)
-			{
-				
-			}
-			else
-			{
-				
-			}
-			break;
-		case 2:			//波形传输控制
-			if(cmd)
-			{
-				
-			}
-			else
-			{
-				
-			}			
-			break;
-		case 3:			//显示fps
-			if(cmd)
-			{
-				
-			}
-			else
-			{
-				
-			}
-			break;
-		default:
-			break;
-	}
-}
-
 //将数据传送到对外端口
 void Data_Output(u8 ch)
 {
@@ -156,6 +128,36 @@ void Display_Image(void)
 	Data_Output(ch);
 	
 	ch = 0x01;
+	Data_Output(ch);
+	
+}
+
+//显示图像，配合山外多功能调试助手
+void Display_Result(void)
+{
+	uint32_t i;
+	uint8_t ch;
+	
+	//发送包头
+	ch = 0x02;
+	Data_Output(ch);
+
+	ch = 0xFD;
+	Data_Output(ch);
+
+	
+	//发送图像
+	for(i = 0 ; i<IMG_HEIGHT*IMG_WIDTH; i++ )
+	{		
+		ch = result_array[i];
+		Data_Output(ch);
+	}
+	
+	//发送包尾
+	ch = 0xFD;
+	Data_Output(ch);
+	
+	ch = 0x02;
 	Data_Output(ch);
 	
 }
@@ -244,6 +246,110 @@ void Send_Parameter_Fps(void)
 	Data_Output(ch);
 }
 
+void Send_Parameter_Mode(void)
+{
+	uint8_t ch;
+	
+	ch = 0x05;
+	Data_Output(ch);
+	ch = 0xFA;
+	Data_Output(ch);
+	
+	//发送mode
+	ch = mode;
+	Data_Output(ch);
+	
+	//发送包尾
+	ch = 0xFA;
+	Data_Output(ch);
+	ch = 0x05;
+	Data_Output(ch);
+}
+
+void Data_Output_Ctrl(unsigned char cmd)
+{
+	switch(cmd)
+	{
+		case 1:
+			flag_Image = 1;
+			break;
+		case 2:
+			flag_Image = 0;
+			break;
+		case 3:
+			flag_Result = 1;
+			break;
+		case 4:
+			flag_Result = 0;
+			break;
+		case 5:
+			flag_Wave = 1;
+			break;
+		case 6:
+			flag_Wave = 0;
+			break;
+		case 7:
+			flag_Fps = 1;
+			break;
+		case 8:
+			flag_Fps = 0;
+			break;
+		case 9:
+			flag_Sd = 1;
+			break;
+		case 10:
+			flag_Sd = 0;
+			break;
+		default:
+			break;
+	}
+}
+
+void Mode_Change(void)	//在按键中断中调用
+{
+	mode++;
+	if(mode>4)
+	{
+		mode = 0;
+	}
+	
+	switch(mode)
+	{
+		case 0:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 1:
+			flag_Image = 1;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 2:
+			flag_Image = 0;
+			flag_Result = 1;
+			flag_Wave = 0;
+			flag_Sd = 0;
+			break;
+		case 3:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 1;
+			flag_Sd = 0;
+			break;
+		case 4:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd = 1;
+			break;
+		default:
+			break;
+	}
+}
+
 void Image_Output(void)
 {
 	//*******************************************************************
@@ -252,22 +358,38 @@ void Image_Output(void)
 	if(!full_flag)
 	{
 		#if defined(__DISPLAY_IMAGE)
+			if(flag_Image)
+				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
 		
-			Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+		#endif
+		
+		#if defined(__DISPLAY_RESULT)
+		
+			if(flag_Result)
+				Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
 		
 		#endif
 		
 			
 		#if defined(__DISPALY_WAVE)
 		
-			Display_Wave();	//串口输出波形
+			if(flag_Wave)
+				Display_Wave();	//串口输出波形
 		
 		#endif
 		
 		
 		#if defined(__PARAMETER_FPS)
 		
-			Send_Parameter_Fps();
+			if(flag_Fps)
+				Send_Parameter_Fps();
+		
+		#endif
+			
+		#if defined(__PARAMETER_MODE)
+			
+			if(flag_Mode)
+				Send_Parameter_Mode();
 		
 		#endif
 	}
@@ -277,9 +399,12 @@ void Image_Output(void)
 	
 	#ifdef __SD_SAVE
 	
-		if(SD_State)	//如果SD卡挂载成功
+		if(flag_Sd)
 		{
-			TO_SDcard();    //SD卡
+			if(SD_State)	//如果SD卡挂载成功
+			{
+				TO_SDcard();    //SD卡
+			}
 		}
 		
 	#endif

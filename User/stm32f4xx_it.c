@@ -32,6 +32,7 @@
 #include "./camera/bsp_ov5640.h"
 #include "./systick/bsp_SysTick.h"
 #include "./key/bsp_exti.h"
+#include "image_processing.h"
 #include "include.h"
 
 extern unsigned int Task_Delay[];
@@ -217,7 +218,7 @@ void DCMI_IRQHandler(void)
 
 extern int flag;
 //KEY1外部中断
-void KEY1_IRQHandler(void)
+void KEY1_IRQHandler(void)	//核心板上的按钮
 {
 	//确保是否产生了EXTI Line中断
 	if(EXTI_GetITStatus(KEY1_INT_EXTI_LINE) != RESET) 
@@ -225,10 +226,12 @@ void KEY1_IRQHandler(void)
 		
 //		printf("Key1\n");
 		
-		if(flag != 0)
-		{
-			Image_Process();
-		}
+//		if(flag != 0)
+//		{
+//			Image_Process();
+//		}
+		Mode_Change();
+		
 
 		//清除中断标志位
 		EXTI_ClearITPendingBit(KEY1_INT_EXTI_LINE);
