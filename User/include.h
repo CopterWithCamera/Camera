@@ -15,7 +15,7 @@
 
 //======== Í¼Ïñ´«Êä =================
 
-#define __USART_DISPLAY
+//#define __USART_DISPLAY
 #define __NRF_DISPLAY
 
 //ÏÔÊ¾ÄÚÈİ£º

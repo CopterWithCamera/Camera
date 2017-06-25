@@ -709,19 +709,9 @@ void OV5640_Init(void)
 	/* 使能DCMI时钟 */
 	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_DCMI, ENABLE);
 
-//	/* DCMI 配置*/ 
-//	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_Continuous;
-//	DCMI_InitStructure.DCMI_SynchroMode = DCMI_SynchroMode_Hardware;
-//	DCMI_InitStructure.DCMI_PCKPolarity = DCMI_PCKPolarity_Rising;
-//	DCMI_InitStructure.DCMI_VSPolarity = DCMI_VSPolarity_High;
-//	DCMI_InitStructure.DCMI_HSPolarity = DCMI_HSPolarity_Low;
-//	DCMI_InitStructure.DCMI_CaptureRate = DCMI_CaptureRate_All_Frame;
-//	DCMI_InitStructure.DCMI_ExtendedDataMode = DCMI_ExtendedDataMode_8b;
-//	DCMI_Init(&DCMI_InitStructure); 	
-	
-	/* DCMI 配置 */		
-	//快照模式，每次只捕获一帧图像 
+	/* DCMI 配置*/ 	
 	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_SnapShot;
+//	DCMI_InitStructure.DCMI_CaptureMode = DCMI_CaptureMode_Continuous;
 	DCMI_InitStructure.DCMI_SynchroMode = DCMI_SynchroMode_Hardware;
 	DCMI_InitStructure.DCMI_PCKPolarity = DCMI_PCKPolarity_Rising;
 	DCMI_InitStructure.DCMI_VSPolarity = DCMI_VSPolarity_High;

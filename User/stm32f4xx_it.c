@@ -190,7 +190,8 @@ void DMA2_Stream1_IRQHandler(void)
 		}
 		
 		/*DMA 一行一行传输*/
-		OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_width*2*(lcd_height-line_num-1)),img_width*2/4);
+		//OV5640_DMA_Config(FSMC_LCD_ADDRESS+(lcd_width*2*(lcd_height-line_num-1)),img_width*2/4);
+		OV5640_DMA_Config(FSMC_LCD_ADDRESS,img_height*img_width*2/4);
 
 		DMA_ClearITPendingBit(DMA2_Stream1,DMA_IT_TCIF1);
 	}
@@ -224,15 +225,8 @@ void KEY1_IRQHandler(void)	//核心板上的按钮
 	if(EXTI_GetITStatus(KEY1_INT_EXTI_LINE) != RESET) 
 	{
 		
-//		printf("Key1\n");
-		
-//		if(flag != 0)
-//		{
-//			Image_Process();
-//		}
 		Mode_Change();
 		
-
 		//清除中断标志位
 		EXTI_ClearITPendingBit(KEY1_INT_EXTI_LINE);
 	}  
@@ -255,6 +249,13 @@ void KEY2_IRQHandler(void)
 		EXTI_ClearITPendingBit(KEY2_INT_EXTI_LINE);     
 	}  
 }
+
+//		printf("Key1\n");
+		
+//		if(flag != 0)
+//		{
+//			Image_Process();
+//		}
 
 
 /**
