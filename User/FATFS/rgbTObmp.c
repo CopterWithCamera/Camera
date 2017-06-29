@@ -1,5 +1,3 @@
-//#include "stdafx.h"
-
 #include "rgbTObmp.h"
 #include "ff.h"
 
@@ -11,24 +9,11 @@ typedef unsigned short WORD;
 FRESULT res_sd; 
 UINT fnum;            					/* File R/W count */
 
-//这是一个存放完整的bmp格式文件区域，此文件将来发送至SD卡
-BYTE SDIO_BUFFER_ARRAY[54+IMG_WIDTH*IMG_HEIGHT*3]  __EXRAM;
-//BYTE SDIO_BUFFER_ARRAY_DEAL[54+IMG_WIDTH*IMG_HEIGHT*3]  __EXRAM;
+BYTE SDIO_BUFFER_ARRAY[54+IMG_WIDTH*IMG_HEIGHT*3]  __EXRAM;		//存放完整的bmp格式文件区域
+FIL fnew1;		//图片文件指针
+char picn[20];	//文件名称数组
 
-//图片文件指针
-FIL fnew1;
-//FIL dealfnew1;
-
-//文件名称数组
-char picn[20];
-
-//typedef struct
-//{    long imageSize;
-//    long blank;
-//    long startPosition;
-//}BmpHead;
-
-void RGB2BMP(BYTE ARRAY[])
+void WRITE_BMP_HEAD(BYTE ARRAY[])		//向图像暂存矩阵写入BMP文件前54字节
 {
 	// fwrte(bfType,1,szeof(bfType),fp1);
 	ARRAY[0]='B';ARRAY[1]='M';
@@ -111,37 +96,53 @@ void RGB2BMP(BYTE ARRAY[])
 	
 }
 
-int a=1;
-void TO_SDcard(void)
+int a=0;	//文件编号
+void TO_SDcard(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结果矩阵
 {   
-    long i =1, j=1, k=0;
-    uint8_t r,g,b;
+    long i,j;
+    unsigned char r,g,b;
 
+	a++;	//图片编号累加（从1开始计数）
+
+	WRITE_BMP_HEAD(SDIO_BUFFER_ARRAY);	//写入BMP前54字节文件信息
 	
-	a++;	//图片编号累加
-
-	RGB2BMP(SDIO_BUFFER_ARRAY);
 	for(i=IMG_HEIGHT;i>0;i=i-1)
 	{
-		for(j=0;j<IMG_WIDTH*2;j=j+2)
+		for(j=0;j<IMG_WIDTH;j++)
 		{
-			//rgb565 -> rgb888
-			r = (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j+1] >> 3) * 8;
-			g = (((CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j] >> 5)) * 4;//这个地方应该是总体*4
-			b = (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j] & 0x1F) * 8;
+			switch(mode)
+			{
+				case 0:
+					//rgb565 -> rgb888（从摄像头缓存取数据）
+					r = (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j*2+1] >> 3) * 8;
+					g = (((CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j*2+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j*2] >> 5)) * 4;//这个地方应该是总体*4
+					b = (CAMERA_BUFFER_ARRAY[(i-1)*IMG_WIDTH*2+j*2] & 0x1F) * 8;
+					sprintf(picn,"pic%d_original.bmp",a);	//生成图片名称数组
+				break;
+				
+				case 1:
+					//gray_array
+					r = g = b = gray_array[i];
+					sprintf(picn,"pic%d_gray.bmp",a);	//生成图片名称数组
+				break;
+				
+				case 2:
+					//result_array
+					r = g = b = result_array[i];
+					sprintf(picn,"pic%d_result.bmp",a);	//生成图片名称数组
+				break;
+				
+				default:
+				break;
+			}
 			
-			//rgb888
+			//rgb888数据存入图像矩阵
 			
-			SDIO_BUFFER_ARRAY[54+k*3+2]=r;
-			SDIO_BUFFER_ARRAY[54+k*3+1]=g;
-			SDIO_BUFFER_ARRAY[54+k*3+0]=b;
-			k++;			
+			SDIO_BUFFER_ARRAY[54+j*3+2]=r;
+			SDIO_BUFFER_ARRAY[54+j*3+1]=g;
+			SDIO_BUFFER_ARRAY[54+j*3+0]=b;
 		}
 	}
-	k=0;
-
-	sprintf(picn,"pic%d.bmp",a);	//生成图片名称数组
-	
 	
 	res_sd = f_open(&fnew1, picn,FA_CREATE_ALWAYS | FA_WRITE );
 	res_sd = f_write(&fnew1,SDIO_BUFFER_ARRAY,sizeof(SDIO_BUFFER_ARRAY),&fnum);
@@ -149,5 +150,5 @@ void TO_SDcard(void)
 }
 
 
-	
+
 //********************************************************************************************
