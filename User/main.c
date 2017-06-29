@@ -30,11 +30,29 @@
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
 
-/*简单任务管理*/
+/*						*\
+		简单任务管理
+		
+0 采图帧率
+1 运算帧率
+2
+3
+4
+5
+6
+7
+8
+9
+
+\*						*/
+
 uint32_t Task_Delay[NumOfTask];
 
+//帧率计算
 uint8_t fps_temp = 0;
 float fps = 0;
+uint8_t processing_fps_temp = 0;
+float processing_fps = 0;
 
 void My_Camera_Init(void)
 {
@@ -219,7 +237,7 @@ int main(void)
 		
 		Image_Process();	//图像处理函数，包括读图和写入显存
 		
-		//波特率计算
+		//帧率计算
 		if(Task_Delay[0]==0)
 		{
 			Task_Delay[0]=5000; //此值每1ms会减1，减到0才可以重新进来这里
@@ -233,12 +251,3 @@ int main(void)
 
 /*********************************************END OF FILE**********************/
 
-//		//定时更新图像（用于测试）
-//		if(Task_Delay[1]==0 && flag == 0)
-//		{
-//			//DCMI_CaptureCmd(ENABLE);
-//			
-//			Image_Process();	//图像处理函数，包括读图和写入显存
-//			
-//			Task_Delay[1]=100; //此值每1ms会减1，减到0才可以重新进来这里
-//		}

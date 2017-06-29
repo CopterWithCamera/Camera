@@ -39,5 +39,9 @@
 extern int SD_State;
 extern int NRF24L01_State;
 extern float fps;
+extern float processing_fps;
+
+extern uint8_t fps_temp;
+extern uint8_t processing_fps_temp;
 
 #endif /* __INCLUDE_H */

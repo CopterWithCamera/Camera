@@ -35,8 +35,6 @@
 #include "image_processing.h"
 #include "include.h"
 
-extern unsigned int Task_Delay[];
-
 /** @addtogroup STM32F429I_DISCOVERY_Examples
   * @{
   */
@@ -172,11 +170,10 @@ void SysTick_Handler(void)
 
 extern uint16_t lcd_width, lcd_height;
 extern uint16_t img_width, img_height;
-extern uint8_t fps_temp;
 
 //DCMI --> 缓存
 //static uint16_t line_num =0;	//记录传输了多少行
-void DMA2_Stream1_IRQHandler(void)
+void DMA2_Stream1_IRQHandler(void)								//这个DMA中断已经被关了
 {
   if(  DMA_GetITStatus(DMA2_Stream1,DMA_IT_TCIF1) == SET )    
   {

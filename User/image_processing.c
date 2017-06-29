@@ -257,6 +257,17 @@ void Send_Parameter_Fps(void)
 	ch = a[3];
 	Data_Output(ch);	
 	
+	//发送运算fps
+	float_char(processing_fps,a);
+	ch = a[0];
+	Data_Output(ch);
+	ch = a[1];
+	Data_Output(ch);
+	ch = a[2];
+	Data_Output(ch);	
+	ch = a[3];
+	Data_Output(ch);
+	
 	//发送包尾
 	ch = 0xFB;
 	Data_Output(ch);
@@ -374,48 +385,52 @@ void Mode_Change(void)	//在按键中断中调用
 
 }
 
-void Image_Output(void)
+void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运算的同时传输，运算后图只能在运算结束后传输）
 {
 	//*******************************************************************
 	//输出信息
 	
 	if(!full_flag)
 	{
-		#if defined(__DISPLAY_IMAGE)
-			if(flag_Image)
-				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
-		
-		#endif
-		
-		#if defined(__DISPLAY_RESULT)
-		
-			if(flag_Result)
-				Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
-		
-		#endif
-		
+		if(!mode)
+		{
+			#if defined(__DISPLAY_IMAGE)
+				if(flag_Image)
+					Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
 			
-		#if defined(__DISPALY_WAVE)
-		
-			if(flag_Wave)
-				Display_Wave();	//串口输出波形
-		
-		#endif
-		
-		
-		#if defined(__PARAMETER_FPS)
-		
-			if(flag_Fps)
-				Send_Parameter_Fps();
-		
-		#endif
+			#endif
+				
+			#if defined(__PARAMETER_FPS)
 			
-		#if defined(__PARAMETER_MODE)
+				if(flag_Fps)
+					Send_Parameter_Fps();
 			
-			if(flag_Mode)
-				Send_Parameter_Mode();
-		
-		#endif
+			#endif
+				
+			#if defined(__PARAMETER_MODE)
+				
+				if(flag_Mode)
+					Send_Parameter_Mode();
+			
+			#endif
+		}
+		else
+		{
+			#if defined(__DISPLAY_RESULT)
+			
+				if(flag_Result)
+					Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
+			
+			#endif
+			
+				
+			#if defined(__DISPALY_WAVE)
+			
+				if(flag_Wave)
+					Display_Wave();	//串口输出波形
+			
+			#endif
+		}
 	}
 	
 	//*******************************************************************
@@ -447,8 +462,21 @@ void Image_Process(void)
 	image_updata_flag = 0;	//新图已经开始被使用，新图标志清零
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
+	
+	//波特率计算
+	processing_fps_temp++;	//计算运算帧率
+	if(Task_Delay[1]==0)
+	{
+		Task_Delay[1]=5000; //此值每1ms会减1，减到0才可以重新进来这里
+		
+		processing_fps = processing_fps_temp/5.0f;	//计算当前计算帧率
+		processing_fps_temp =0;						//重置
+	}
+		
+		
+	Image_Output(0);	//数据输出（原始图像相关内容）
 	Image_Fix();	//图像处理函数
-	Image_Output();	//数据输出
+	Image_Output(1);	//数据输出（运算后内容）
 
 	processing_ready = 1;	//运算结束置1
 
