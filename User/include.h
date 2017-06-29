@@ -19,11 +19,11 @@
 #define __NRF_DISPLAY
 
 //显示内容：
-#define __DISPLAY_IMAGE		//显示图像
-#define __DISPLAY_RESULT	//运算结果
-#define __DISPALY_WAVE		//显示波形
-#define __PARAMETER_FPS		//发送FPS 
-#define __PARAMETER_MODE	//发送MODE
+#define __DISPLAY_IMAGE		//发送灰度图像
+#define __DISPLAY_RESULT	//发送运算结果图像
+#define __DISPALY_WAVE		//发送波形
+#define __PARAMETER_FPS		//发送FPS
+#define __PARAMETER_MODE	//发送MODE参数
 
 //======== 输出串口选择 ==============
 
@@ -34,10 +34,17 @@
 
 #define __SD_SAVE
 
+//存储内容：
+
+#define __SD_SAVE_ORIGINAL	//保存原始彩色图
+#define __SD_SAVE_GRAY		//保存灰度矩阵生成的图像
+#define __SD_SAVE_RESULT	//保存运算结果矩阵生成的图像
+
 //*************************************
 
 extern int SD_State;
 extern int NRF24L01_State;
+
 extern float fps;
 extern float processing_fps;
 

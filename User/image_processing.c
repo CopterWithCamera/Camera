@@ -41,7 +41,9 @@ unsigned char mode = 1;
 u8 flag_Image = 0;
 u8 flag_Result = 0;
 u8 flag_Wave = 0;
-u8 flag_Sd = 0;
+u8 flag_Sd_original = 0;
+u8 flag_Sd_gray = 0;
+u8 flag_Sd_result = 0;
 u8 flag_Fps = 1;
 u8 flag_Mode = 1;
 
@@ -324,10 +326,10 @@ void Data_Output_Ctrl(unsigned char cmd)
 			flag_Fps = 0;
 			break;
 		case 9:
-			flag_Sd = 1;
+			flag_Sd_original = 1;
 			break;
 		case 10:
-			flag_Sd = 0;
+			flag_Sd_original = 0;
 			break;
 		default:
 			break;
@@ -342,32 +344,65 @@ void Mode_Set(void)
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd = 0;
-			break;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+		break;
+		
 		case 1:
 			flag_Image = 1;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd = 0;
-			break;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+		break;
+		
 		case 2:
 			flag_Image = 0;
 			flag_Result = 1;
 			flag_Wave = 0;
-			flag_Sd = 0;
-			break;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+		break;
+		
 		case 3:
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 1;
-			flag_Sd = 0;
-			break;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+		break;
+		
 		case 4:
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd = 1;
-			break;
+			flag_Sd_original = 1;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+		break;
+		
+		case 5:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 1;
+			flag_Sd_result = 0;
+		break;
+		
+		case 6:
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd_original = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 1;
+		break;
+		
 		default:
 			break;
 	}
@@ -376,7 +411,7 @@ void Mode_Set(void)
 void Mode_Change(void)	//在按键中断中调用
 {
 	mode++;
-	if(mode>4)
+	if(mode>6)
 	{
 		mode = 0;
 	}
@@ -438,12 +473,28 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 	
 	#ifdef __SD_SAVE
 	
-		if(flag_Sd)
+		if(SD_State)	//如果SD卡挂载成功
 		{
-			if(SD_State)	//如果SD卡挂载成功
-			{
-				TO_SDcard();    //SD卡
-			}
+			#if defined(__SD_SAVE_ORIGINAL)
+
+				if(flag_Sd_original)
+					TO_SDcard(0);    //原始彩图
+			
+			#endif
+			
+			#if defined(__SD_SAVE_GRAY)
+			
+				if(flag_Sd_gray)
+					TO_SDcard(1);    //Gray矩阵图
+			
+			#endif
+			
+			#if defined(__SD_SAVE_RESULT)
+				
+				if(flag_Sd_result)
+					TO_SDcard(2);    //Result矩阵图
+			
+			#endif
 		}
 		
 	#endif
