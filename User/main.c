@@ -59,7 +59,7 @@ void My_Camera_Init(void)
 	OV5640_IDTypeDef OV5640_Camera_ID;
 	
 	/* 初始化摄像头GPIO及IIC */
-	OV5640_HW_Init();   
+	OV5640_HW_Init();   		//同F407工程相同，不必更改
 
 	/* 读取摄像头芯片ID，确定摄像头正常连接 */
 	OV5640_ReadID(&OV5640_Camera_ID);
@@ -171,30 +171,31 @@ u8 SDCard_Init(void)
 	res_sd_conf = f_mount(&fs,"0:",1);  //挂载文件系统
 	
 	//如果没有文件系统，则要格式化，再挂载
-	if(res_sd_conf == FR_NO_FILESYSTEM)
+//	if(res_sd_conf == FR_NO_FILESYSTEM)
+	if(res_sd_conf != FR_OK)				//只要不是FR_OK都直接返回SD卡状态错误，不进行错误处理
 	{
-		printf("》SD卡还没有文件系统，即将进行格式化...\r\n");
-		/* 格式化 */
-		res_sd_conf=f_mkfs("0:",0,0);							
+		printf("SD卡挂载失败\r\n");
+		return 0;
 		
-		if(res_sd_conf == FR_OK)
-		{
-			printf("》SD卡已成功格式化文件系统。\r\n");
-			/* 格式化后，先取消挂载 */
-			res_sd_conf = f_mount(NULL,"0:",1);			
-			/* 重新挂载	*/			
-			res_sd_conf = f_mount(&fs,"0:",1);
-		}
-		else
-		{
-			printf("《《格式化失败。》》\r\n");
-			return 0;	//SD卡挂载失败
-		}
+//		printf("》SD卡还没有文件系统，即将进行格式化...\r\n");
+//		/* 格式化 */
+//		res_sd_conf=f_mkfs("0:",0,0);							
+//		
+//		if(res_sd_conf == FR_OK)
+//		{
+//			printf("》SD卡已成功格式化文件系统。\r\n");
+//			res_sd_conf = f_mount(NULL,"0:",1);			/* 格式化后，先取消挂载 */
+//			res_sd_conf = f_mount(&fs,"0:",1);		/* 重新挂载	*/	
+//		}
+//		else
+//		{
+//			printf("《《格式化失败。》》\r\n");
+//			return 0;	//SD卡挂载失败
+//		}
 	}
-	else
-	{
-		printf("》SD卡挂载成功\r\n");
-	}
+
+	printf("SD卡挂载成功\r\n");
+	
 	return 1;	//SD卡挂载成功
 }
 
