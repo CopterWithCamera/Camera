@@ -35,7 +35,7 @@ float length;	//偏差
 float speed;
 
 //传输数据的模式
-unsigned char mode = 1;	
+unsigned char mode = 0;
 
 //控制传输的flag
 u8 flag_Image = 0;
@@ -44,6 +44,8 @@ u8 flag_Wave = 0;
 u8 flag_Sd_original = 0;
 u8 flag_Sd_gray = 0;
 u8 flag_Sd_result = 0;
+
+//参数传输flag（一般要开启）
 u8 flag_Fps = 1;
 u8 flag_Mode = 1;
 
@@ -345,7 +347,7 @@ void Mode_Set(void)
 			flag_Result = 0;
 			flag_Wave = 0;
 			flag_Sd_original = 0;
-			flag_Sd_gray = 0;
+			flag_Sd_gray = 1;
 			flag_Sd_result = 0;
 		break;
 		
@@ -465,39 +467,39 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 					Display_Wave();	//串口输出波形
 			
 			#endif
+				
+			//SD存图	
+				
+			#ifdef __SD_SAVE
+
+				if(SD_State)	//如果SD卡挂载成功
+				{
+					#if defined(__SD_SAVE_ORIGINAL)
+
+						if(flag_Sd_original)
+							TO_SDcard(0);    //原始彩图
+					
+					#endif
+					
+					#if defined(__SD_SAVE_GRAY)
+					
+						if(flag_Sd_gray)
+							TO_SDcard(1);    //Gray矩阵图
+					
+					#endif
+					
+					#if defined(__SD_SAVE_RESULT)
+						
+						if(flag_Sd_result)
+							TO_SDcard(2);    //Result矩阵图
+					
+					#endif
+				}
+	
+			#endif
 		}
 	}
-	
-	//*******************************************************************
-	//SD存图
-	
-	#ifdef __SD_SAVE
-	
-		if(SD_State)	//如果SD卡挂载成功
-		{
-			#if defined(__SD_SAVE_ORIGINAL)
 
-				if(flag_Sd_original)
-					TO_SDcard(0);    //原始彩图
-			
-			#endif
-			
-			#if defined(__SD_SAVE_GRAY)
-			
-				if(flag_Sd_gray)
-					TO_SDcard(1);    //Gray矩阵图
-			
-			#endif
-			
-			#if defined(__SD_SAVE_RESULT)
-				
-				if(flag_Sd_result)
-					TO_SDcard(2);    //Result矩阵图
-			
-			#endif
-		}
-		
-	#endif
 }
 
 //*********************** 总执行函数 **********************************************

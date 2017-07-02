@@ -457,7 +457,8 @@ unsigned short RGB565_Auto[][2]=
 {
     // 800x480 15fps, night mode 5fps
     // input clock 24Mhz, PCLK 45.6Mhz
-    0x3035, 0x41, // PLL
+    //0x3035, 0x41, // PLL
+	0x3035, 0x21, // PLL		30fps
     0x3036, 0x72, // PLL
     0x3c07, 0x08, // light meter 1 threshold[7:0]
     0x3820, 0x41, // flip

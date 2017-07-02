@@ -122,13 +122,13 @@ void TO_SDcard(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结
 				
 				case 1:
 					//gray_array
-					r = g = b = gray_array[i];
+					r = g = b = gray_array[i*IMG_WIDTH+j];
 					sprintf(picn,"pic%d_gray.bmp",a);	//生成图片名称数组
 				break;
 				
 				case 2:
 					//result_array
-					r = g = b = result_array[i];
+					r = g = b = result_array[i*IMG_WIDTH+j];
 					sprintf(picn,"pic%d_result.bmp",a);	//生成图片名称数组
 				break;
 				
@@ -138,9 +138,9 @@ void TO_SDcard(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结
 			
 			//rgb888数据存入图像矩阵
 			
-			SDIO_BUFFER_ARRAY[54+j*3+2]=r;
-			SDIO_BUFFER_ARRAY[54+j*3+1]=g;
-			SDIO_BUFFER_ARRAY[54+j*3+0]=b;
+			SDIO_BUFFER_ARRAY[54+i*IMG_WIDTH*3+j*3+2]=r;
+			SDIO_BUFFER_ARRAY[54+i*IMG_WIDTH*3+j*3+1]=g;
+			SDIO_BUFFER_ARRAY[54+i*IMG_WIDTH*3+j*3+0]=b;
 		}
 	}
 	
