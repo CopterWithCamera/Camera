@@ -1,7 +1,7 @@
 # Camera
 ## 说明
 
-STM32F4配合OV5640做图像采集与处理.
+  STM32F4配合OV5640做图像采集与处理.
 
 ## 工程获取与项目初始化
 
@@ -13,7 +13,7 @@ STM32F4配合OV5640做图像采集与处理.
 
   git submodule update --init --recursive
 
-参考资料：http://blog.csdn.net/wangjia55/article/details/24400501
+  参考资料：http://blog.csdn.net/wangjia55/article/details/24400501
 
 ## 更新子模块
 
