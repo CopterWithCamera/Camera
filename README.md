@@ -5,11 +5,11 @@ STM32F4配合OV5640做图像采集与处理.
 
 * 工程获取与项目初始化
 
-1.clone本项目
+## 1.clone本项目
 
 git clone git@github.com:shuanglengyunji/Camera.git
 
-2.初始化submodule子模块
+## 2.初始化submodule子模块
 
 git submodule update --init --recursive
 
@@ -17,19 +17,19 @@ git submodule update --init --recursive
 
 * 更新子模块
 
-1.进入子模块目录
+## 1.进入子模块目录
 
 cd .\user\CameraImageFix\
 
-2.拉取最新版本
+## 2.拉取最新版本
 
 git pull
 
-3.返回主目录
+## 3.返回主目录
 
 cd .\..\..
 
-4.commit主程序
+## 4.commit主程序
 
 git commit -a
 
