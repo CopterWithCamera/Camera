@@ -15,7 +15,23 @@ git submodule update --init --recursive
 
 参考资料：http://blog.csdn.net/wangjia55/article/details/24400501
 
-3.
+* 更新子模块
+
+1.进入子模块目录
+
+cd .\user\CameraImageFix\
+
+2.拉取最新版本
+
+git pull
+
+3.返回主目录
+
+cd .\..\..
+
+4.commit主程序
+
+git commit -a
 
 * 版本发布
 
