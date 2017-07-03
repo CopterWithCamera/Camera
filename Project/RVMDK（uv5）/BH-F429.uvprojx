@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F429_439xx,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF;..\..\User\imagefix</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF;..\..\User\CameraImageFix</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -692,7 +692,7 @@
             <File>
               <FileName>image_fix.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\imagefix\image_fix.c</FilePath>
+              <FilePath>..\..\User\CameraImageFix\image_fix.c</FilePath>
             </File>
           </Files>
         </Group>
