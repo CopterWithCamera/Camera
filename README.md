@@ -27,8 +27,6 @@ git pull
 
 * 返回主目录
 
-cd .\..\..
-
 * commit主程序
 
 git commit -a
