@@ -56,7 +56,7 @@ void Creat_Gray(void)
 	
 	uint16_t i,j;
 
-	uint8_t tmp[IMG_WIDTH];
+ 	uint8_t tmp[IMG_WIDTH];
 	
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
@@ -67,16 +67,16 @@ void Creat_Gray(void)
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
 	
-	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
-	for(i=0;i<IMG_HEIGHT;i++)
-	{
-		for(j=0;j<IMG_WIDTH;j++)
-		{
-			tmp[j] = gray_array[i*IMG_WIDTH+j];
-			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
-			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp[j];
-		}
-	}
+//	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
+//	for(i=0;i<IMG_HEIGHT;i++)
+//	{
+//		for(j=0;j<IMG_WIDTH;j++)
+//		{
+//			tmp[j] = gray_array[i*IMG_WIDTH+j];
+//			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
+//			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp[j];
+//		}
+//	}
 }
 
 //************************ 为算法提供数据源 ************************************
