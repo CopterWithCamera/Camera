@@ -1,7 +1,7 @@
 # Camera
 ## 说明
 
-  STM32F4配合OV5640做图像采集与处理.
+STM32F4配合OV5640做图像采集与处理.
 
 ## 工程获取与项目初始化
 
@@ -33,4 +33,4 @@
 
 ## 版本发布
 
-  请访问 [releases](https://github.com/shuanglengyunji/Camera/releases) 界面获取最新版本.
+请访问 [releases](https://github.com/shuanglengyunji/Camera/releases) 界面获取最新版本.
