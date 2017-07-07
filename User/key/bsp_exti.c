@@ -27,7 +27,7 @@ static void NVIC_Configuration(void)
   NVIC_InitTypeDef NVIC_InitStructure;
   
   /* 配置NVIC为优先级组1 */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+//  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
   
   /* 配置中断源：按键1 */
   NVIC_InitStructure.NVIC_IRQChannel = KEY1_INT_EXTI_IRQ;

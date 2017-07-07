@@ -149,6 +149,52 @@ void TO_SDcard(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结
 	f_close(&fnew1);
 }
 
+//向一个文件中持续写入数据，不关闭文件
+u8 ToOneFile_StartFlag = 0;		//开始定时写入FLAG
+char ToOneFile_FileName[20];	//文件名称数组
+FIL ToOneFile_f;				//文件指针
+BYTE SDIO_ONEFILE_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT]  __EXRAM;		//一张灰度图片像素信息长度的缓存区
+void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结果矩阵
+{
+    long i,j;
+    unsigned char r,g,b;
+	
+	if(!ToOneFile_StartFlag)
+	{
+		ToOneFile_StartFlag = 1;
+		
+		sprintf(ToOneFile_FileName,"OneFile.hex");	//生成文件名
+		res_sd = f_open(&ToOneFile_f, ToOneFile_FileName,FA_CREATE_ALWAYS | FA_WRITE );	//打开文件
+	}
+	
+	for(i=IMG_HEIGHT;i>0;i=i-1)
+	{
+		for(j=0;j<IMG_WIDTH;j++)
+		{
+			switch(mode)
+			{	
+				case 1:
+					//gray_array
+					r = gray_array[i*IMG_WIDTH+j];
+				break;
+				
+				case 2:
+					//result_array
+					r = result_array[i*IMG_WIDTH+j];
+				break;
+				
+				default:
+				break;
+			}
+			
+			//rgb888数据存入图像矩阵
+			
+			SDIO_ONEFILE_BUFFER_ARRAY[i*IMG_WIDTH+j]=r;
+		}
+	}
+	
+	res_sd = f_write(&ToOneFile_f,SDIO_ONEFILE_BUFFER_ARRAY,sizeof(SDIO_ONEFILE_BUFFER_ARRAY),&fnum);	//写入数据，不关闭文件
+}
 
 
 //********************************************************************************************

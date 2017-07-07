@@ -35,7 +35,7 @@
 		
 0 采图帧率
 1 运算帧率
-2
+2 持续写入模式下定时保存SD卡文件
 3
 4
 5
@@ -213,6 +213,8 @@ int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 	
+	NVIC_PriorityGroupConfig (NVIC_PriorityGroup_1);	//设定中断优先级分组
+	
 	Debug_USART_Config();	//串口1
 	USART2_Config();		//串口2
 	SysTick_Init();		//用于延时函数
@@ -245,7 +247,15 @@ int main(void)
 			
 			fps = fps_temp/5.0f;
 			fps_temp =0;	//重置
+		}
+		
+		//持续写入SD卡模式下定时保存文件数据
+		if(Task_Delay[2]==0)
+		{
+			Task_Delay[2]=1000; //此值每1ms会减1，减到0才可以重新进来这里
 			
+			if(ToOneFile_StartFlag)
+				f_sync(&ToOneFile_f);
 		}
 	}
 }

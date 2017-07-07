@@ -109,11 +109,11 @@ DRESULT disk_read (
 			}
 			
 			SD_state=SD_ReadMultiBlocks(buff,sector*SD_BLOCKSIZE,SD_BLOCKSIZE,count);
-		  if(SD_state==SD_OK)
+			if(SD_state==SD_OK)
 			{
 				/* Check if the Transfer is finished */
 				SD_state=SD_WaitReadOperation();
-				while(SD_GetStatus() != SD_TRANSFER_OK);
+				while(SD_GetStatus() != SD_TRANSFER_OK);	//这里存在循环等待
 			}
 			if(SD_state!=SD_OK)
 				status = RES_PARERR;

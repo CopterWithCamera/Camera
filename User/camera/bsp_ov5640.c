@@ -729,7 +729,7 @@ void OV5640_Init(void)
 	
 
 	/* 配置中断 */
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+//	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
 //	/* 配置中断源 */
 //	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream1_IRQn ;//DMA数据流中断

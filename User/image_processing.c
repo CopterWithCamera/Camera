@@ -56,8 +56,9 @@ void Creat_Gray(void)
 	
 	uint16_t i,j;
 
- 	uint8_t tmp[IMG_WIDTH];
+ 	uint8_t tmp;
 	
+	//转灰度
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
 	{
 		r = (CAMERA_BUFFER_ARRAY[i+1] >> 3) * 8;
@@ -67,16 +68,16 @@ void Creat_Gray(void)
 		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
 	
-//	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
-//	for(i=0;i<IMG_HEIGHT;i++)
-//	{
-//		for(j=0;j<IMG_WIDTH;j++)
-//		{
-//			tmp[j] = gray_array[i*IMG_WIDTH+j];
-//			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
-//			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp[j];
-//		}
-//	}
+	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
+	for(i=0;i<IMG_HEIGHT;i++)
+	{
+		for(j=0;j<IMG_WIDTH;j++)
+		{
+			tmp = gray_array[i*IMG_WIDTH+j];
+			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
+			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp;
+		}
+	}
 }
 
 //************************ 为算法提供数据源 ************************************
@@ -338,7 +339,7 @@ void Data_Output_Ctrl(unsigned char cmd)
 	}
 }
 
-void Mode_Set(void)
+void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 {
 	switch(mode)
 	{
@@ -472,29 +473,43 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 				
 			#ifdef __SD_SAVE
 
-				if(SD_State)	//如果SD卡挂载成功
-				{
-					#if defined(__SD_SAVE_ORIGINAL)
+				//保存完整图片
+				#if (__SD_SAVE_MODE == 0)
+				
+					if(SD_State)	//如果SD卡挂载成功
+					{
+						//原始彩图
+						#if defined(__SD_SAVE_ORIGINAL)
 
-						if(flag_Sd_original)
-							TO_SDcard(0);    //原始彩图
-					
-					#endif
-					
-					#if defined(__SD_SAVE_GRAY)
-					
-						if(flag_Sd_gray)
-							TO_SDcard(1);    //Gray矩阵图
-					
-					#endif
-					
-					#if defined(__SD_SAVE_RESULT)
+							if(flag_Sd_original)
+								TO_SDcard(0);    
 						
-						if(flag_Sd_result)
-							TO_SDcard(2);    //Result矩阵图
+						#endif
+						
+						//灰度图片
+						#if defined(__SD_SAVE_GRAY)
+						
+							if(flag_Sd_gray)
+								TO_SDcard(1);    //
+						
+						#endif
+						
+						//Result矩阵图
+						#if defined(__SD_SAVE_RESULT)
+							
+							if(flag_Sd_result)
+								TO_SDcard(2);    
+						
+						#endif
+					}
+				
+				//持续写入图片
+				#elif (__SD_SAVE_MODE == 1)
 					
-					#endif
-				}
+					if(flag_Sd_gray)
+						TO_SDcard_OneFile(1);		//灰度图
+					
+				#endif
 	
 			#endif
 		}
@@ -513,11 +528,12 @@ void Image_Process(void)
 	while(!image_updata_flag){}
 	
 	image_updata_flag = 0;	//新图已经开始被使用，新图标志清零
+
+	processing_fps_temp++;	//计算运算帧率
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
 	
-	//波特率计算
-	processing_fps_temp++;	//计算运算帧率
+	//处理速率计算
 	if(Task_Delay[1]==0)
 	{
 		Task_Delay[1]=5000; //此值每1ms会减1，减到0才可以重新进来这里
@@ -525,7 +541,6 @@ void Image_Process(void)
 		processing_fps = processing_fps_temp/5.0f;	//计算当前计算帧率
 		processing_fps_temp =0;						//重置
 	}
-		
 		
 	Image_Output(0);	//数据输出（原始图像相关内容）
 	Image_Fix();	//图像处理函数
