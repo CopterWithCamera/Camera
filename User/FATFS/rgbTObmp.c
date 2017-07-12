@@ -167,7 +167,7 @@ void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵  
 		res_sd = f_open(&ToOneFile_f, ToOneFile_FileName,FA_CREATE_ALWAYS | FA_WRITE );	//打开文件
 	}
 	
-	for(i=IMG_HEIGHT;i>0;i=i-1)
+	for(i=IMG_HEIGHT-1;i>=0;i--)
 	{
 		for(j=0;j<IMG_WIDTH;j++)
 		{

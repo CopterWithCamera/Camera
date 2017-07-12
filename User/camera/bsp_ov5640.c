@@ -287,36 +287,6 @@ unsigned short RGB565_Init[][2]=
 //    0x4741, 0x00,
 };
 
-unsigned short RGB565_QVGA[][2]=
-{    
-    0x3212, 0x03, // start group 3
-    0x3808, 0x01, // DVPHO = 320
-    0x3809, 0x40, // DVP HO
-    0x380a, 0x00, // DVPVO = 240
-    0x380b, 0xf0, // DVPVO
-    0x3810, 0x00, // H offset = 16
-    0x3811, 0x10, // H offset
-    0x3812, 0x00, // V offset = 4
-    0x3813, 0x04, // V offset
-    0x3212, 0x13, // end group 3
-    0x3212, 0xa3, // launch group 3   
-};
-unsigned short RGB565_VGA[][2]=
-{
-    0x3212, 0x03, // start group 3
-    0x3808, 0x02, // DVPHO = 2048
-    0x3809, 0x80, // DVP HO
-    0x380a, 0x01, // DVPVO = 1536
-    0x380b, 0xe0, // DVPVO
-    0x3810, 0x00, // H offset = 16
-    0x3811, 0x10, // H offset
-    0x3812, 0x00, // V offset = 4
-    0x3813, 0x04, // V offset
-    0x3212, 0x13, // end group 3
-    0x3212, 0xa3, // launch group 3
-
-};
-
 unsigned short RGB565_WVGA[][2]=
 {
     // 800x480 15fps, night mode 5fps
@@ -382,77 +352,6 @@ unsigned short RGB565_WVGA[][2]=
 //    0x4741, 0x00,
 };
 
-unsigned short RGB565_200_120[][2]=
-{
-    // 800x480 15fps, night mode 5fps
-    // input clock 24Mhz, PCLK 45.6Mhz
-    0x3035, 0x41, // PLL
-    0x3036, 0x72, // PLL
-    0x3c07, 0x08, // light meter 1 threshold[7:0]
-    0x3820, 0x41, // flip
-//    0x3821, 0x07, // mirror
-    0x3814, 0x31, // timing X inc
-    0x3815, 0x31, // timing Y inc
-    0x3800, 0x00, // HS
-    0x3801, 0x00, // HS
-    0x3802, 0x00, // VS
-    0x3803, 0xbe, // VS
-    0x3804, 0x0a, // HW (HE)
-    0x3805, 0x3f, // HW (HE)
-    0x3806, 0x06, // VH (VE)
-    0x3807, 0xe4, // VH (VE)
-	
-	//200*120
-    0x3808, 0x00, // DVPHO
-    0x3809, 0xC8, // DVPHO
-    0x380a, 0x00, // DVPVO
-    0x380b, 0x78, // DVPVO
-	
-    0x380c, 0x07, // HTS
-    0x380d, 0x69, // HTS
-    0x380e, 0x03, // VTS
-    0x380f, 0x21, // VTS
-    0x3813, 0x06, // timing V offset
-    0x3618, 0x00,
-    0x3612, 0x29,
-    0x3709, 0x52,
-    0x370c, 0x03,
-    0x3a02, 0x09, // 60Hz max exposure, night mode 5fps
-    0x3a03, 0x63, // 60Hz max exposure
-    // banding filters are calculated automatically in camera driver
-    //0x3a08, 0x00, // B50 step
-    //0x3a09, 0x78, // B50 step
-    //0x3a0a, 0x00, // B60 step
-    //0x3a0b, 0x64, // B60 step
-    //0x3a0e, 0x06, // 50Hz max band
-    //0x3a0d, 0x08, // 60Hz max band
-    0x3a14, 0x09, // 50Hz max exposure, night mode 5fps
-    0x3a15, 0x63, // 50Hz max exposure
-    0x4004, 0x02, // BLC line number
-    0x3002, 0x1c, // reset JFIFO, SFIFO, JPG
-    0x3006, 0xc3, // disable clock of JPEG2x, JPEG
-    0x4713, 0x03, // JPEG mode 3
-    0x4407, 0x04, // Quantization sacle
-    0x460b, 0x35,
-    0x460c, 0x22,
-    0x4837, 0x22, // MIPI global timing
-    0x3824, 0x02, // PCLK manual divider
-	
-	0x5001, 0xa3, // SDE on, CMX on, AWB on
-//	0x5001, 0xff, //ª“∂»
-	
-    0x3503, 0x00, // AEC/AGC on//	  /* Initialize OV5640 */
-    
-    
-//    0x3016, 0x01,
-//    0x301C, 0x00,
-//    0x3016, 0x01,
-//    0x301C, 0x01,
-//    0x3019, 0x01,
-//    0x503d, 0x80,//≤‚ ‘≤ Ãı
-//    0x4741, 0x00,
-};
-
 unsigned short RGB565_Auto[][2]=
 {
     // 800x480 15fps, night mode 5fps
@@ -462,7 +361,7 @@ unsigned short RGB565_Auto[][2]=
     0x3036, 0x72, // PLL
     0x3c07, 0x08, // light meter 1 threshold[7:0]
     0x3820, 0x41, // flip
-//    0x3821, 0x07, // mirror
+    0x3821, 0x07, // mirror
     0x3814, 0x31, // timing X inc
     0x3815, 0x31, // timing Y inc
     0x3800, 0x00, // HS
@@ -940,95 +839,11 @@ void OV5640_RGB565Config(void)
 	}
 
 	Delay(500);
-
-//	if(img_width == 320)
-//	   
-//		ImageFormat=BMP_320x240;
-
-//	else if(img_width == 640)
-//	  
-//		ImageFormat=BMP_640x480;
-
-//	else if(img_width == 800)
-//	  
-//		ImageFormat=BMP_800x480;
-//	
-//	else if(img_width == 200)
-//	  
-//		ImageFormat=BMP_200x120;
 	
 	ImageFormat = BMP_AUTO;
-	
-//  switch(ImageFormat)
-//  {
-//    case BMP_320x240:
-//    {
-//      for(i=0; i<(sizeof(RGB565_QVGA)/2); i++)
-//      {
-//        OV5640_WriteReg(RGB565_QVGA[i][0], RGB565_QVGA[i][1]);
-//      }
-//      break;
-//    }
-//    case BMP_640x480:
-//    {
-//       for(i=0; i<(sizeof(RGB565_VGA)/2); i++)
-//      {
-//        OV5640_WriteReg(RGB565_VGA[i][0], RGB565_VGA[i][1]);
-//      }
-//      break;
-//    }
-//    case BMP_800x480:
-//    {
-//      for(i=0; i<(sizeof(RGB565_WVGA)/2); i++)
-//      {
-//        OV5640_WriteReg(RGB565_WVGA[i][0], RGB565_WVGA[i][1]);
-//      }
-//      break;
-//    }
-//    default:
-//    {
-//      for(i=0; i<(sizeof(RGB565_WVGA)/2); i++)
-//      {
-//        OV5640_WriteReg(RGB565_WVGA[i][0], RGB565_WVGA[i][1]);
-//      }
-//      break;
-//    }
-//  }
 
 	switch(ImageFormat)
 	{
-		case BMP_320x240:
-		{
-			for(i=0; i<(sizeof(RGB565_QVGA)/4); i++)
-			{
-				OV5640_WriteReg(RGB565_QVGA[i][0], RGB565_QVGA[i][1]);
-			}
-			break;
-		}
-		case BMP_640x480:
-		{
-			for(i=0; i<(sizeof(RGB565_VGA)/4); i++)
-			{
-				OV5640_WriteReg(RGB565_VGA[i][0], RGB565_VGA[i][1]);
-			}
-			break;
-		}
-		case BMP_800x480:
-		{
-			for(i=0; i<(sizeof(RGB565_WVGA)/4); i++)
-			{
-				OV5640_WriteReg(RGB565_WVGA[i][0], RGB565_WVGA[i][1]);
-			}
-			break;
-		}
-		case BMP_200x120:
-		{
-			for(i=0; i<(sizeof(RGB565_200_120)/4); i++)
-			{
-				OV5640_WriteReg(RGB565_200_120[i][0], RGB565_200_120[i][1]);
-			}
-			break;
-		}
 		case BMP_AUTO:
 		{
 			for(i=0; i<(sizeof(RGB565_Auto)/4); i++)

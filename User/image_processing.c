@@ -65,18 +65,8 @@ void Creat_Gray(void)
 		g = (((CAMERA_BUFFER_ARRAY[i+1] & 0x07) << 3) + (CAMERA_BUFFER_ARRAY[i] >> 5)) * 4;
 		b = (CAMERA_BUFFER_ARRAY[i] & 0x1F) * 8;
 		
-		gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
-	}
-	
-	//临时的图像反转函数，之后有时间再研究如何把灰度计算和图像反转做在一起
-	for(i=0;i<IMG_HEIGHT;i++)
-	{
-		for(j=0;j<IMG_WIDTH;j++)
-		{
-			tmp = gray_array[i*IMG_WIDTH+j];
-			gray_array[i*IMG_WIDTH+j] = gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j];
-			gray_array[(IMG_HEIGHT-i-1)*IMG_WIDTH+j] = tmp;
-		}
+		//gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
+		gray_array[IMG_WIDTH*IMG_HEIGHT - i/2 - 1] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
 }
 
