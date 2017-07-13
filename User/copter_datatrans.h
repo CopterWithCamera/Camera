@@ -6,7 +6,9 @@
 
 void Copter_Receive_Handle(unsigned char data);
 
-
+extern float height_ultra;		//ultra.relative_height*10
+extern float height_LPF;		//sonar.displacement
+extern float height_fusion;		//sonar_fusion.fusion_displacement.out
 
 
 #endif

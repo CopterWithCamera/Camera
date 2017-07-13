@@ -256,6 +256,9 @@ int main(void)
 			
 			if(ToOneFile_StartFlag)
 				f_sync(&ToOneFile_f);
+			
+			if(Height_StartFlag)
+				f_sync(&Height_f);
 		}
 	}
 }

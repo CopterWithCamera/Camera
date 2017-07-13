@@ -1,5 +1,6 @@
 #include "rgbTObmp.h"
 #include "ff.h"
+#include "copter_datatrans.h"
 
 typedef unsigned char  BYTE;
 typedef unsigned short WORD;
@@ -197,20 +198,30 @@ void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵  
 u8 Height_StartFlag = 0;		//开始定时写入FLAG
 char Height_FileName[20];		//文件名称数组
 FIL Height_f;					//文件指针
-char Hight_BUFFER_ARRAY[20];	
-void TO_SDcard_Height()
+char Hight_BUFFER_ARRAY[100] __EXRAM;
+void TO_SDcard_Height(void)
 {
+	u8 i = 0;
 	if(!Height_StartFlag)
 	{
 		Height_StartFlag = 1;
 		
 		sprintf(Height_FileName,"Height.txt");	//生成文件名
-		res_sd = f_open(&Height_f, ToOneFile_FileName,FA_CREATE_ALWAYS | FA_WRITE );	//打开文件
+		res_sd = f_open(&Height_f, Height_FileName,FA_CREATE_ALWAYS | FA_WRITE );	//打开文件
 	}
 	
-	//sprintf(Hight_BUFFER_ARRAY, "%d ", i);
+	sprintf(Hight_BUFFER_ARRAY, "%.1f  %.1f   %.1f\r\n", height_ultra, height_LPF, height_fusion);
 	
-	res_sd = f_write(&Height_f,Hight_BUFFER_ARRAY,sizeof(Hight_BUFFER_ARRAY),&fnum);	//写入数据，不关闭文件
+	while(1)
+	{
+		if(Hight_BUFFER_ARRAY[i] == '\0')
+			break;
+		else
+			i++;
+	}
+	i++;
+	
+	res_sd = f_write(&Height_f,Hight_BUFFER_ARRAY,i,&fnum);	//写入数据，不关闭文件
 }
 
 //********************************************************************************************

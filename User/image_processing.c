@@ -457,10 +457,16 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 			if(SD_State)	//如果SD卡挂载成功
 			{
 				if(flag_Sd_gray)
+				{
 					TO_SDcard_OneFile(1);		//灰度图
+					TO_SDcard_Height();			//记录高度数据
+				}
 				
 				if(flag_Sd_result)
+				{
 					TO_SDcard_OneFile(2);		//灰度图
+					TO_SDcard_Height();			//记录高度数据
+				}
 			}
 
 		#endif

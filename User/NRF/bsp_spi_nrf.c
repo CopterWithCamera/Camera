@@ -460,7 +460,7 @@ u8 NRF_Send(u8 Data)
 				return 1;	//·¢ËÍ³É¹¦
 		}
 		
-		printf("·¢ËÍÊ§°Ü£¡\r\n");
+		//printf("NRF Send Error!\r\n");
 		return 2;	//·¢ËÍÊ§°Ü
 	}
 	return 0;	//·¢ËÍ»º³åÇøÎ´Âú

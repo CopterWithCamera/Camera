@@ -699,11 +699,6 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\copter_datatrans.c</FilePath>
             </File>
-            <File>
-              <FileName>copter_datatrans.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\copter_datatrans.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

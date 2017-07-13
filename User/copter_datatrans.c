@@ -11,9 +11,11 @@ unsigned char Tmp_Buffer[20];
 
 void Get_Height(void)
 {
-	height_ultra = *((float*)(&(Tmp_Buffer[0])));
-	height_LPF = *((float*)(&(Tmp_Buffer[4])));
+	height_ultra  = *((float*)(&(Tmp_Buffer[0])));
+	height_LPF    = *((float*)(&(Tmp_Buffer[4])));
 	height_fusion = *((float*)(&(Tmp_Buffer[8])));
+	
+	printf("%.1f  %.1f   %.1f\r\n", height_ultra, height_LPF, height_fusion);
 }
 
 u8 counter = 0;
