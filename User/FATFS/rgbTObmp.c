@@ -5,14 +5,14 @@ typedef unsigned char  BYTE;
 typedef unsigned short WORD;
 
 /*文件系统相关*/
-	
+
 FRESULT res_sd; 
 UINT fnum;            					/* File R/W count */
 
+//存图片
 BYTE SDIO_BUFFER_ARRAY[54+IMG_WIDTH*IMG_HEIGHT*3]  __EXRAM;		//存放完整的bmp格式文件区域
 FIL fnew1;		//图片文件指针
 char picn[20];	//文件名称数组
-
 void WRITE_BMP_HEAD(BYTE ARRAY[])		//向图像暂存矩阵写入BMP文件前54字节
 {
 	// fwrte(bfType,1,szeof(bfType),fp1);
@@ -157,7 +157,7 @@ BYTE SDIO_ONEFILE_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT]  __EXRAM;		//一张灰度图片像
 void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵   2 -- 结果矩阵
 {
     long i,j;
-    unsigned char r,g,b;
+    unsigned char r;
 	
 	if(!ToOneFile_StartFlag)
 	{
@@ -174,13 +174,11 @@ void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵  
 			switch(mode)
 			{	
 				case 1:
-					//gray_array
-					r = gray_array[i*IMG_WIDTH+j];
+					r = gray_array[i*IMG_WIDTH+j];	//灰度图
 				break;
 				
 				case 2:
-					//result_array
-					r = result_array[i*IMG_WIDTH+j];
+					r = result_array[i*IMG_WIDTH+j];	//运算结果
 				break;
 				
 				default:
@@ -196,5 +194,23 @@ void TO_SDcard_OneFile(u8 mode)	//数据源模式   0 -- 摄像头缓存   1 -- 灰度矩阵  
 	res_sd = f_write(&ToOneFile_f,SDIO_ONEFILE_BUFFER_ARRAY,sizeof(SDIO_ONEFILE_BUFFER_ARRAY),&fnum);	//写入数据，不关闭文件
 }
 
+u8 Height_StartFlag = 0;		//开始定时写入FLAG
+char Height_FileName[20];		//文件名称数组
+FIL Height_f;					//文件指针
+char Hight_BUFFER_ARRAY[20];	
+void TO_SDcard_Height()
+{
+	if(!Height_StartFlag)
+	{
+		Height_StartFlag = 1;
+		
+		sprintf(Height_FileName,"Height.txt");	//生成文件名
+		res_sd = f_open(&Height_f, ToOneFile_FileName,FA_CREATE_ALWAYS | FA_WRITE );	//打开文件
+	}
+	
+	//sprintf(Hight_BUFFER_ARRAY, "%d ", i);
+	
+	res_sd = f_write(&Height_f,Hight_BUFFER_ARRAY,sizeof(Hight_BUFFER_ARRAY),&fnum);	//写入数据，不关闭文件
+}
 
 //********************************************************************************************

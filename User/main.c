@@ -229,7 +229,7 @@ int main(void)
 	
 	//开启传输
 	OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//开启第一次传输
-	DCMI_Cmd(ENABLE); 
+	DCMI_Cmd(ENABLE);
 	DCMI_CaptureCmd(ENABLE);
 	
 	Mode_Set();	//设置数据传输模式

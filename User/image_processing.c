@@ -100,13 +100,7 @@ void To_Result(uint16_t row,uint16_t column,uint8_t gray)
 
 //将数据传送到对外端口
 void Data_Output(u8 ch)
-{
-	#ifdef __USART_DISPLAY
-
-		USART2_Send(ch);
-	
-	#endif
-	
+{	
 	#ifdef __NRF_DISPLAY
 		if(NRF24L01_State)
 		{
@@ -418,91 +412,58 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 	//*******************************************************************
 	//输出信息
 	
-	if(!full_flag)
+	if(!mode)
 	{
-		if(!mode)
-		{
-			#if defined(__DISPLAY_IMAGE)
-				if(flag_Image)
-					Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+		#if defined(__DISPLAY_IMAGE)
+			if(flag_Image)
+				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
+		
+		#endif
 			
-			#endif
-				
-			#if defined(__PARAMETER_FPS)
+		#if defined(__PARAMETER_FPS)
+		
+			if(flag_Fps)
+				Send_Parameter_Fps();
+		
+		#endif
 			
-				if(flag_Fps)
-					Send_Parameter_Fps();
+		#if defined(__PARAMETER_MODE)
 			
-			#endif
-				
-			#if defined(__PARAMETER_MODE)
-				
-				if(flag_Mode)
-					Send_Parameter_Mode();
+			if(flag_Mode)
+				Send_Parameter_Mode();
+		
+		#endif
+	}
+	else
+	{
+		#if defined(__DISPLAY_RESULT)
+		
+			if(flag_Result)
+				Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
+		
+		#endif
+		
 			
-			#endif
-		}
-		else
-		{
-			#if defined(__DISPLAY_RESULT)
+		#if defined(__DISPALY_WAVE)
+		
+			if(flag_Wave)
+				Display_Wave();	//串口输出波形
+		
+		#endif
+		
 			
-				if(flag_Result)
-					Display_Result();	//从串口输出图像，配合山外多功能调试助手显示
-			
-			#endif
-			
-				
-			#if defined(__DISPALY_WAVE)
-			
-				if(flag_Wave)
-					Display_Wave();	//串口输出波形
-			
-			#endif
-				
-			//SD存图	
-				
-			#ifdef __SD_SAVE
+		#ifdef __SD_SAVE		//SD存图
 
-				//保存完整图片
-				#if (__SD_SAVE_MODE == 0)
+			if(SD_State)	//如果SD卡挂载成功
+			{
+				if(flag_Sd_gray)
+					TO_SDcard_OneFile(1);		//灰度图
 				
-					if(SD_State)	//如果SD卡挂载成功
-					{
-						//原始彩图
-						#if defined(__SD_SAVE_ORIGINAL)
+				if(flag_Sd_result)
+					TO_SDcard_OneFile(2);		//灰度图
+			}
 
-							if(flag_Sd_original)
-								TO_SDcard(0);    
-						
-						#endif
-						
-						//灰度图片
-						#if defined(__SD_SAVE_GRAY)
-						
-							if(flag_Sd_gray)
-								TO_SDcard(1);    //
-						
-						#endif
-						
-						//Result矩阵图
-						#if defined(__SD_SAVE_RESULT)
-							
-							if(flag_Sd_result)
-								TO_SDcard(2);    
-						
-						#endif
-					}
-				
-				//持续写入图片
-				#elif (__SD_SAVE_MODE == 1)
-					
-					if(flag_Sd_gray)
-						TO_SDcard_OneFile(1);		//灰度图
-					
-				#endif
-	
-			#endif
-		}
+		#endif
 	}
 
 }
@@ -531,9 +492,9 @@ void Image_Process(void)
 		processing_fps = processing_fps_temp/5.0f;	//计算当前计算帧率
 		processing_fps_temp =0;						//重置
 	}
-		
+
 	Image_Output(0);	//数据输出（原始图像相关内容）
-	Image_Fix();	//图像处理函数
+	Image_Fix();		//图像处理函数
 	Image_Output(1);	//数据输出（运算后内容）
 
 	processing_ready = 1;	//运算结束置1

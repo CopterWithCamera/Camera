@@ -15,7 +15,6 @@
 
 //======== 图像传输 =================
 
-//#define __USART_DISPLAY
 #define __NRF_DISPLAY
 
 //显示内容：
@@ -39,11 +38,6 @@
 #define __SD_SAVE_ORIGINAL	//保存原始彩色图
 #define __SD_SAVE_GRAY		//保存灰度矩阵生成的图像
 #define __SD_SAVE_RESULT	//保存运算结果矩阵生成的图像
-
-//存储模式
-
-#define __SD_SAVE_MODE 		1		//0 -- 按照图片格式保存
-									//1 -- 持续写入同一文件
 
 //*************************************
 
