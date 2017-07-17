@@ -640,14 +640,19 @@
               <FilePath>..\..\User\main.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
-            </File>
-            <File>
               <FileName>image_processing.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\image_processing.c</FilePath>
+            </File>
+            <File>
+              <FileName>image_fix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\CameraImageFix\image_fix.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
             </File>
             <File>
               <FileName>bsp_ov5640.c</FileName>
@@ -688,11 +693,6 @@
               <FileName>bsp_spi_nrf.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\NRF\bsp_spi_nrf.c</FilePath>
-            </File>
-            <File>
-              <FileName>image_fix.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\CameraImageFix\image_fix.c</FilePath>
             </File>
             <File>
               <FileName>copter_datatrans.c</FileName>

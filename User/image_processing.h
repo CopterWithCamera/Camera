@@ -23,7 +23,9 @@ extern uint8_t * CAMERA_BUFFER_ARRAY;	//当前数据指针
 extern uint8_t * DCMI_IN_BUFFER_ARRAY;	//当前输入缓存指针
 
 extern uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//存储灰度图像的矩阵（提供灰度图像）
+extern uint8_t gray_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//灰度列向量矩阵
 extern uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+extern uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//结果列向量矩阵
 
 //输出参数变量
 extern float length;	//偏差

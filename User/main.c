@@ -220,8 +220,14 @@ int main(void)
 	SysTick_Init();		//用于延时函数
 	My_RAM_TEST();		//内存分配情况测试
 	EXTI_Key_Config();	//初始化外部中断按键
-	NRF24L01_Init();	//NRF24L01
+
 	My_Camera_Init();	//初始化OV5640
+	
+	#ifdef __NRF_DISPLAY
+	
+		NRF24L01_Init();	//NRF24L01
+	
+	#endif
 	
 	#ifdef __SD_SAVE
 		SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功

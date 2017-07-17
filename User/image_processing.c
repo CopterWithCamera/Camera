@@ -26,9 +26,11 @@ uint8_t * DCMI_IN_BUFFER_ARRAY = CAMERA_BUFFER_ARRAY2;	//当前输入缓存指针
 
 //灰度图像存储空间
 uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+uint8_t gray_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//列向量矩阵
 
 //运算结果存储空间
 uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
+uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//列向量矩阵
 
 //输出参数
 float length;	//偏差
@@ -54,9 +56,7 @@ void Creat_Gray(void)
 {
 	uint32_t r,g,b;
 	
-	uint16_t i,j;
-
- 	uint8_t tmp;
+	uint16_t i;
 	
 	//转灰度
 	for(i=0;i<IMG_WIDTH*IMG_HEIGHT*2;i=i+2)
@@ -68,32 +68,35 @@ void Creat_Gray(void)
 		//gray_array[i/2] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 		gray_array[IMG_WIDTH*IMG_HEIGHT - i/2 - 1] = (r * 299 + g * 587 + b * 114 + 500) / 1000;
 	}
-}
-
-//************************ 为算法提供数据源 ************************************
-
-//获取单点Gray区数值
-uint8_t Get_Gray(uint16_t row,uint16_t column)	//第row行，第column个
-{
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
 	
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	return gray_array[num/2];
 }
 
-//存储单点数据到result区
-void To_Result(uint16_t row,uint16_t column,uint8_t gray)
+//转换为列向量矩阵
+void Creat_Column(void)	//把图翻到对角的位置，生成gray_across_array
 {
-	//计算点的方式是先确定第row行，再确定在本行中的第column个数值。
-	//行：row      范围：1 -- IMG_HEIGHT
-	//列：column   范围：1 -- IMG_WIDTH
+	uint16_t i,j;
+	
+	for (i = 0; i < 48; i++)
+	{
+		for (j = 0; j < 80; j++)
+		{
+			gray_column_array[j * 48 + i] = gray_array[i * 80 + j];
+		}
+	}
+}
 
-	uint32_t num;
-	num = (row-1)*IMG_WIDTH*2 + (column-1)*2;
-	result_array[num/2] = gray;
+//列向量矩阵恢复为行矩阵
+void Column_To_Line(void)	//把图翻到对角的位置，生成gray_across_array
+{
+	uint16_t i,j;
+	
+	for (i = 0; i < 80; i++)
+	{
+		for (j = 0; j < 48; j++)
+		{
+			result_array[j * 80 + i] = gray_column_array[i * 48 + j];
+		}
+	}
 }
 
 //************** 输出信息 ************************************************
@@ -489,6 +492,7 @@ void Image_Process(void)
 	processing_fps_temp++;	//计算运算帧率
 	
 	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
+	Creat_Column();	//转换为列向量矩阵
 	
 	//处理速率计算
 	if(Task_Delay[1]==0)
@@ -501,6 +505,7 @@ void Image_Process(void)
 
 	Image_Output(0);	//数据输出（原始图像相关内容）
 	Image_Fix();		//图像处理函数
+	Column_To_Line();	//从列向量矩阵恢复为行矩阵
 	Image_Output(1);	//数据输出（运算后内容）
 
 	processing_ready = 1;	//运算结束置1
