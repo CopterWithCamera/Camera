@@ -645,6 +645,11 @@
               <FilePath>..\..\User\image_processing.c</FilePath>
             </File>
             <File>
+              <FileName>image_fix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\imagefix\image_fix.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
@@ -694,16 +699,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\copter_datatrans.c</FilePath>
             </File>
-            <File>
-              <FileName>image_fix.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\imagefix\image_fix.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>DOC</GroupName>
           <Files>
+            <File>
+              <FileName>摄像头分辨率修改文档.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Doc\摄像头分辨率修改文档.txt</FilePath>
+            </File>
             <File>
               <FileName>必读说明.txt</FileName>
               <FileType>5</FileType>
@@ -718,11 +723,6 @@
               <FileName>摄像头故障排除文档.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Doc\摄像头故障排除文档.txt</FilePath>
-            </File>
-            <File>
-              <FileName>摄像头分辨率修改文档.txt</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\Doc\摄像头分辨率修改文档.txt</FilePath>
             </File>
             <File>
               <FileName>整体修改文档.txt</FileName>

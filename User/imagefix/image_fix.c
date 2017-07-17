@@ -44,15 +44,17 @@ float sum(const float x[46])
   return y;
 }
 
+float b_a[3840] __EXRAM;
+float e[3840] __EXRAM;
+short f[3840] __EXRAM;
+float b_e[3840] __EXRAM;
+float weight_matric[1380] __EXRAM;
+u32 counterrr = 10;
 void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
 {
-  float b_a[3840];
-  float e[3840];
-  short f[3840];
   int i0;
   int i;
   int j;
-  float b_e[3840];
   short b[9];
   float more_value;
   float less_value;
@@ -64,7 +66,6 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
   int k;
   float delivery_threshold;
   float b_max;
-  float weight_matric[1380];
   float shuzu[61];
   float summ;
   int cishu;
@@ -141,9 +142,15 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
   more_counter = 0.0;
   less_counter = 0.0;
   flag = false;
-  pre_threshold = 20.0;
+  pre_threshold = 30.0;
   delivery_threshold = 0.0;
+  
+  counterrr = 10;
+  
   while (!flag) {
+	  counterrr --;
+	  if(counterrr == 0)
+		  break;
     for (i = 0; i < 46; i++) {
       for (j = 0; j < 78; j++) {
         if (b_a[(i + 48 * (j + 1)) + 1] > pre_threshold) {
