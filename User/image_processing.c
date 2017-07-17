@@ -333,9 +333,9 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 		case 0:
 			flag_Image = 0;
 			flag_Result = 0;
-			flag_Wave = 0;
+			flag_Wave = 1;
 			flag_Sd_original = 0;
-			flag_Sd_gray = 1;
+			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
 		break;
 		
