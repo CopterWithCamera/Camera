@@ -14,16 +14,18 @@
 /* ****************** 对外提供数据接口 ************************ */
 
 //图像存储区
-//extern uint8_t CAMERA_BUFFER_ARRAY[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//存储摄像头采集到的RGB565数据和要显示的数据的数组（提供彩色图像）
-
 extern uint8_t CAMERA_BUFFER_ARRAY1[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
 extern uint8_t CAMERA_BUFFER_ARRAY2[IMG_WIDTH*IMG_HEIGHT*2] __EXRAM;	//长度*宽度*2个字节
 
+//图像指针
 extern uint8_t * CAMERA_BUFFER_ARRAY;	//当前数据指针
 extern uint8_t * DCMI_IN_BUFFER_ARRAY;	//当前输入缓存指针
 
+//灰度图像
 extern uint8_t gray_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//存储灰度图像的矩阵（提供灰度图像）
 extern uint8_t gray_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//灰度列向量矩阵
+
+//运算结果
 extern uint8_t result_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//长度*宽度*1字节
 extern uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//结果列向量矩阵
 

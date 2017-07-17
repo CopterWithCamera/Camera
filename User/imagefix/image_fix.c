@@ -1,7 +1,9 @@
 #include "image_fix.h"
 #include "image_processing.h"
+#include "math.h"
 
 #define ABS(x) ( (x)>0?(x):-(x) )
+#define fabs(x) ( (x)>0?(x):-(x) )
 
 
 /*
