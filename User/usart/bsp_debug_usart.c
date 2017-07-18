@@ -95,7 +95,7 @@ void USART2_IRQHandler(void)
 		com_data = USART2->DR;
 		
 		//接收处理函数
-		Copter_Receive_Handle(com_data);
+		Camera_Receive_Handle(com_data);
 	}
 	//发送（进入移位）中断
 	if( USART_GetITStatus(USART2,USART_IT_TXE ) )
@@ -184,21 +184,21 @@ void Debug_USART_Config(void)
 ///重定向c库函数printf到串口DEBUG_USART，重定向后可使用printf函数
 int fputc(int ch, FILE *f)
 {
-		/* 发送一个字节数据到串口DEBUG_USART */
-		USART_SendData(DEBUG_USART, (uint8_t) ch);
-		
-		/* 等待发送完毕 */
-		while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);		
+	/* 发送一个字节数据到串口DEBUG_USART */
+	USART_SendData(DEBUG_USART, (uint8_t) ch);
 	
-		return (ch);
+	/* 等待发送完毕 */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_TXE) == RESET);		
+
+	return (ch);
 }
 
 ///重定向c库函数scanf到串口DEBUG_USART，重写向后可使用scanf、getchar等函数
 int fgetc(FILE *f)
 {
-		/* 等待串口输入数据 */
-		while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_RXNE) == RESET);
+	/* 等待串口输入数据 */
+	while (USART_GetFlagStatus(DEBUG_USART, USART_FLAG_RXNE) == RESET);
 
-		return (int)USART_ReceiveData(DEBUG_USART);
+	return (int)USART_ReceiveData(DEBUG_USART);
 }
 /*********************************************END OF FILE**********************/

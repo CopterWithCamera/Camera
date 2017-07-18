@@ -462,7 +462,7 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 		
 		//向飞控发送内容
 		
-		Copter_Data_Send();	//发送运算结果数据
+		Camera_Data_Send();	//发送运算结果数据
 	
 		//向上位机发送内容
 		

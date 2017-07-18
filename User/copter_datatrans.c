@@ -25,7 +25,7 @@ void Get_Height(void)
 }
 
 u8 counter = 0;
-void Copter_Receive_Handle(unsigned char data)
+void Camera_Receive_Handle(unsigned char data)
 {
 	static u8 mode = 0;
 	
@@ -92,7 +92,7 @@ void Send_to_Copter(unsigned char *DataToSend ,u8 data_num)
 }
 
 //发送位置信息
-void Copter_Send_Position(void)
+void Camera_Send_Position(void)
 {
 	float tmp_f;
 	
@@ -129,7 +129,7 @@ void Copter_Send_Position(void)
 
 //向飞控发送数据
 //每次运算结束自动调用此函数发送信息
-void Copter_Data_Send(void)
+void Camera_Data_Send(void)
 {
-	Copter_Send_Position();		//发送位置信息（偏移、角度、速度）
+	Camera_Send_Position();		//发送位置信息（偏移、角度、速度）
 }
