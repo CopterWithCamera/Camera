@@ -4,6 +4,7 @@
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
 #include "image_fix.h"
+#include "copter_datatrans.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -415,8 +416,16 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 	//*******************************************************************
 	//输出信息
 	
-	if(!mode)
+	if(!mode)	
 	{
+		//运算开始前发送内容（不需要运算的内容）
+		
+		//向飞控发送内容
+		
+		Up_To_FC();
+		
+		
+		//向上位机发送
 		#if defined(__DISPLAY_IMAGE)
 			if(flag_Image)
 				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
@@ -439,6 +448,14 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 	}
 	else
 	{
+		//运算后发送的内容
+		
+		//向飞控发送内容
+		
+		
+	
+		//向上位机发送内容
+		
 		#if defined(__DISPLAY_RESULT)
 		
 			if(flag_Result)

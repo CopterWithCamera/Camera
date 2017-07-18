@@ -71,4 +71,51 @@ void Copter_Receive_Handle(unsigned char data)
 	}
 }
 
+//=======================================================================================================================
 
+unsigned char Data_Buffer[20];
+
+void Send_to_Camera(unsigned char *DataToSend ,u8 data_num)
+{
+	Usart3_Send(DataToSend,data_num);
+}
+
+void Camrea_Send_Height(void)
+{
+	float tmp_f;
+	
+	u8 cnt = 0;
+	
+	//帧头
+	Data_Buffer[cnt++] = 0xAA;	
+	Data_Buffer[cnt++] = 0xAA;
+	
+	//功能字
+	Data_Buffer[cnt++] = 0x01;	
+	
+	//内容
+	tmp_f = ultra.relative_height*10;	//转为mm单位
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	tmp_f = sonar.displacement;
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	tmp_f = sonar_fusion.fusion_displacement.out;
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	Send_to_Camera(Data_Buffer,cnt);
+}
+
+void Up_To_FC()	//向飞控发送数据
+{
+	
+}

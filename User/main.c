@@ -29,6 +29,7 @@
 #include "ff.h"
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
+#include "copter_datatrans.h"
 
 /*						*\
 		简单任务管理
@@ -77,7 +78,6 @@ void My_Camera_Init(void)
 	OV5640_Init();			//DCMI  DMA  INTERRUPT
 	OV5640_RGB565Config();
 	OV5640_AUTO_FOCUS();
-	
 }
 
 
@@ -133,11 +133,9 @@ void My_RAM_TEST(void)
 	printf("全局SDRAM：它的地址为：0x%x,变量值为：%d\r\n",(uint32_t)&testValue,testValue);
 	printf("全局SDRAM数组：它的地址为：0x%x,变量值为：%d,%d,%d\r\n",(uint32_t)testGrup,testGrup[0],testGrup[1],testGrup[2]);
 
-//	printf("全局CAMERA_BUFFER_ARRAY：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY);
+	printf("全局CAMERA_BUFFER_ARRAY1：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY1);
+	printf("全局CAMERA_BUFFER_ARRAY2：它的地址为：0x%x\r\n",(uint32_t)&CAMERA_BUFFER_ARRAY2);
 	
-	
-//	LCD_FRAME_BUFFER_ARRAY
-//	CAMERA_BUFFER_ARRAY	
 }
 
 //禁用WiFi模块（用sd卡必须禁用wifi，原因不明）
@@ -176,22 +174,6 @@ u8 SDCard_Init(void)
 	{
 		printf("SD卡挂载失败\r\n");
 		return 0;
-		
-//		printf("》SD卡还没有文件系统，即将进行格式化...\r\n");
-//		/* 格式化 */
-//		res_sd_conf=f_mkfs("0:",0,0);							
-//		
-//		if(res_sd_conf == FR_OK)
-//		{
-//			printf("》SD卡已成功格式化文件系统。\r\n");
-//			res_sd_conf = f_mount(NULL,"0:",1);			/* 格式化后，先取消挂载 */
-//			res_sd_conf = f_mount(&fs,"0:",1);		/* 重新挂载	*/	
-//		}
-//		else
-//		{
-//			printf("《《格式化失败。》》\r\n");
-//			return 0;	//SD卡挂载失败
-//		}
 	}
 
 	printf("SD卡挂载成功\r\n");
@@ -243,7 +225,6 @@ int main(void)
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
 	{
-		
 		Image_Process();	//图像处理函数，包括读图和写入显存
 		
 		//帧率计算
