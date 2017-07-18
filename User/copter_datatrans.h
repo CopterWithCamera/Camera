@@ -5,7 +5,7 @@
 #include "include.h"
 
 void Copter_Receive_Handle(unsigned char data);
-void Up_To_FC(void);
+void Copter_Data_Send(void);
 
 extern float height_ultra;		//ultra.relative_height*10
 extern float height_LPF;		//sonar.displacement

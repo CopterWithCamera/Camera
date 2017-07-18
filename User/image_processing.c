@@ -35,6 +35,7 @@ uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//列向量矩阵
 
 //输出参数
 float length;	//偏差
+float angle;
 float speed;
 
 //传输数据的模式
@@ -185,7 +186,7 @@ void float_char(float f,unsigned char *s)
     *(s+3) = *(p+3);
 }
 
-//输出波形（length和speed），用山外多功能调试助手查看
+//输出波形（length、angle、speed），用山外多功能调试助手查看
 void Display_Wave(void)
 {
 	uint8_t ch;
@@ -211,6 +212,17 @@ void Display_Wave(void)
 	Data_Output(ch);
 	
 	//发送通道二
+	float_char(angle,a);
+	ch = a[0];
+	Data_Output(ch);
+	ch = a[1];
+	Data_Output(ch);
+	ch = a[2];
+	Data_Output(ch);
+	ch = a[3];
+	Data_Output(ch);
+	
+	//发送通道三
 	float_char(speed,a);
 	ch = a[0];
 	Data_Output(ch);
@@ -219,7 +231,7 @@ void Display_Wave(void)
 	ch = a[2];
 	Data_Output(ch);
 	ch = a[3];
-	Data_Output(ch);		
+	Data_Output(ch);
 	
 	//发送包尾
 	ch = 0xFC;
@@ -422,8 +434,6 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 		
 		//向飞控发送内容
 		
-		Up_To_FC();
-		
 		
 		//向上位机发送
 		#if defined(__DISPLAY_IMAGE)
@@ -452,7 +462,7 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 		
 		//向飞控发送内容
 		
-		
+		Copter_Data_Send();	//发送运算结果数据
 	
 		//向上位机发送内容
 		

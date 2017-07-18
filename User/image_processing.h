@@ -31,7 +31,8 @@ extern uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//结果列向量矩
 
 //输出参数变量
 extern float length;	//偏差
-extern float speed;
+extern float angle;		//角度
+extern float speed;		//速度
 
 //数据传输函数
 uint8_t Get_Gray(uint16_t row,uint16_t column);				//从Gray区提取数据

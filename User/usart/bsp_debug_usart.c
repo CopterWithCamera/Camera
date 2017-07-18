@@ -23,7 +23,6 @@
 u8 TxBuffer2[4000];
 u16 TxCounter2=0;
 u16 cnt2=0;
-int full_flag = 0;
 
 //配置USART2
 void USART2_Config(void)
@@ -112,7 +111,6 @@ void USART2_IRQHandler(void)
 		if(TxCounter2 == cnt2)	//发送指针追上了输入指针
 		{
 			USART2->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
-			full_flag = 0;	//清除队满标志
 		}
 
 		//USART_ClearITPendingBit(USART2,USART_IT_TXE);
@@ -121,25 +119,17 @@ void USART2_IRQHandler(void)
 
 void USART2_Send(unsigned char ch)
 {
-	if(!full_flag)
-	{
-		TxBuffer2[cnt2++] = ch;
-	
-		//处理传入计数指针数值
-		if(cnt2>=4000)
-		{
-			cnt2=0;
-		}
-		
-		if(cnt2 == TxCounter2)	//输入指针追上了发送指针
-		{
-			full_flag = 1;
-		}
+	TxBuffer2[cnt2++] = ch;
 
-		if(!(USART2->CR1 & USART_CR1_TXEIE))//检测是否发完，发完CR1的TXEIE被上面置为0了（关闭了中断）
-		{
-			USART_ITConfig(USART2, USART_IT_TXE, ENABLE); //打开发送中断
-		}
+	//处理传入计数指针数值
+	if(cnt2>=4000)
+	{
+		cnt2=0;
+	}
+
+	if(!(USART2->CR1 & USART_CR1_TXEIE))//检测是否发完，发完CR1的TXEIE被上面置为0了（关闭了中断）
+	{
+		USART_ITConfig(USART2, USART_IT_TXE, ENABLE); //打开发送中断
 	}
 }
 

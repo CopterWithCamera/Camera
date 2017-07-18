@@ -1,5 +1,11 @@
 #include "copter_datatrans.h"
 #include "./usart/bsp_debug_usart.h"
+#include "image_processing.h"
+
+#define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)	  ) )
+#define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
+#define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
+#define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
 
 //高度数据，单位mm
 float height_ultra = 0;		//ultra.relative_height*10
@@ -75,12 +81,18 @@ void Copter_Receive_Handle(unsigned char data)
 
 unsigned char Data_Buffer[20];
 
-void Send_to_Camera(unsigned char *DataToSend ,u8 data_num)
+void Send_to_Copter(unsigned char *DataToSend ,u8 data_num)
 {
-	Usart3_Send(DataToSend,data_num);
+	u16 i;
+	
+	for(i = 0;i<data_num;i++)
+	{
+		USART2_Send(DataToSend[i]);
+	}
 }
 
-void Camrea_Send_Height(void)
+//发送位置信息
+void Copter_Send_Position(void)
 {
 	float tmp_f;
 	
@@ -88,34 +100,36 @@ void Camrea_Send_Height(void)
 	
 	//帧头
 	Data_Buffer[cnt++] = 0xAA;	
-	Data_Buffer[cnt++] = 0xAA;
+	Data_Buffer[cnt++] = 0xAF;
 	
 	//功能字
-	Data_Buffer[cnt++] = 0x01;	
+	Data_Buffer[cnt++] = 0x01;
 	
 	//内容
-	tmp_f = ultra.relative_height*10;	//转为mm单位
+	tmp_f = length;							//偏移
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	tmp_f = sonar.displacement;
+	tmp_f = angle;							//角度
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	tmp_f = sonar_fusion.fusion_displacement.out;
+	tmp_f = speed;							//速度
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	Send_to_Camera(Data_Buffer,cnt);
+	Send_to_Copter(Data_Buffer,cnt);
 }
 
-void Up_To_FC()	//向飞控发送数据
+//向飞控发送数据
+//每次运算结束自动调用此函数发送信息
+void Copter_Data_Send(void)
 {
-	
+	Copter_Send_Position();		//发送位置信息（偏移、角度、速度）
 }
