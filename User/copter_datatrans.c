@@ -12,8 +12,20 @@ float height_ultra = 0;		//ultra.relative_height*10
 float height_LPF = 0;		//sonar.displacement
 float height_fusion = 0;	//sonar_fusion.fusion_displacement.out
 
+//姿态数据，单位为°
+float roll = 0;
+float pitch = 0;
+float yaw = 0;
+
 //数据暂存数组
 unsigned char Tmp_Buffer[20];
+
+void Get_Attitude(void)
+{
+	roll  = *((float*)(&(Tmp_Buffer[0])));
+	pitch    = *((float*)(&(Tmp_Buffer[4])));
+	yaw = *((float*)(&(Tmp_Buffer[8])));
+}
 
 void Get_Height(void)
 {
@@ -21,7 +33,7 @@ void Get_Height(void)
 	height_LPF    = *((float*)(&(Tmp_Buffer[4])));
 	height_fusion = *((float*)(&(Tmp_Buffer[8])));
 	
-	printf("%.1f  %.1f   %.1f\r\n", height_ultra, height_LPF, height_fusion);
+//	printf("%.1f  %.1f   %.1f\r\n", height_ultra, height_LPF, height_fusion);
 }
 
 u8 counter = 0;
@@ -53,7 +65,8 @@ void Camera_Receive_Handle(unsigned char data)
 			}
 			else if(data == 0x02)	//进入功能字2解码
 			{
-				
+				mode = 11;
+				counter = 0;
 			}
 			else				//没有对应功能字
 			{
@@ -67,6 +80,16 @@ void Camera_Receive_Handle(unsigned char data)
 			if(counter>=12)
 			{
 				Get_Height();	//高度数据获取完成
+				mode = 0;
+			}
+		break;
+			
+		case 11:
+			Tmp_Buffer[counter] = data;	//3*4字节，总共占用数组0-11位
+			counter++;
+			if(counter>=12)
+			{
+				Get_Attitude();	//高度数据获取完成
 				mode = 0;
 			}
 		break;
@@ -127,9 +150,46 @@ void Camera_Send_Position(void)
 	Send_to_Copter(Data_Buffer,cnt);
 }
 
+//发送位置信息
+void Camera_Send_Status(void)
+{
+	float tmp_f;
+	
+	u8 cnt = 0;
+	
+	//帧头
+	Data_Buffer[cnt++] = 0xAA;	
+	Data_Buffer[cnt++] = 0xAF;
+	
+	//功能字
+	Data_Buffer[cnt++] = 0x01;
+	
+	//内容
+	tmp_f = fps;							//采图速率
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	tmp_f = processing_fps;					//运算速率
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	tmp_f = 0.0f;							//空
+	Data_Buffer[cnt++] = BYTE0(tmp_f);
+	Data_Buffer[cnt++] = BYTE1(tmp_f);
+	Data_Buffer[cnt++] = BYTE2(tmp_f);
+	Data_Buffer[cnt++] = BYTE3(tmp_f);
+	
+	Send_to_Copter(Data_Buffer,cnt);
+}
+
 //向飞控发送数据
 //每次运算结束自动调用此函数发送信息
 void Camera_Data_Send(void)
 {
 	Camera_Send_Position();		//发送位置信息（偏移、角度、速度）
+	Camera_Send_Status();
 }

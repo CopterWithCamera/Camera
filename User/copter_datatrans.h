@@ -11,6 +11,10 @@ extern float height_ultra;		//ultra.relative_height*10
 extern float height_LPF;		//sonar.displacement
 extern float height_fusion;		//sonar_fusion.fusion_displacement.out
 
+extern float roll;
+extern float pitch;
+extern float yaw;
+
 
 #endif
 

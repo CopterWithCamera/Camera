@@ -37,10 +37,20 @@
 #include "include.h"
 #include "stdio.h"
 
+//定义静态发送地址
+u8 TX_ADDRESS[TX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01}; 
+u8 RX_ADDRESS[RX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01};
+
+//自己定义的发送缓冲数组
 u8 RX_BUF[RX_PLOAD_WIDTH];		//接收数据缓存
 u8 TX_BUF[TX_PLOAD_WIDTH];		//发射数据缓存
-u8 TX_ADDRESS[TX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01};  // 定义一个静态发送地址
-u8 RX_ADDRESS[RX_ADR_WIDTH] = {0x34,0x43,0x10,0x10,0x01};
+
+//中断级发送
+#define __NRF_EXIT_SEND_BUFFER		150
+
+u8 SPI_TX_BUF[__NRF_EXIT_SEND_BUFFER][32];			//用于中断级发送的缓冲队列
+u16 head = 0,tail = 0;			//SPI_TX_BUF的头指针和尾指针
+u8 disable_flag=1;				//失能发送完成中断标志
 
 int NRF24L01_State = 0;	//0 -- 连接失败  1 -- 连接成功
 
@@ -354,8 +364,6 @@ u8 NRF_Check(void)
   */
 u8 NRF_Tx_Dat(u8 *txbuf)
 {
-	u8 state;
-
 	/*ce为低，进入待机模式1*/
 	NRF_CE_LOW();
 
@@ -364,25 +372,8 @@ u8 NRF_Tx_Dat(u8 *txbuf)
 
 	/*CE为高，txbuf非空，发送数据包 */
 	NRF_CE_HIGH();
-
-	/*等待发送完成中断 */                            
-	while(NRF_Read_IRQ()!=0);
-
-	/*读取状态寄存器的值 */
-	state = SPI_NRF_ReadReg(STATUS);
-
-	/*清除TX_DS或MAX_RT中断标志*/
-	SPI_NRF_WriteReg(NRF_WRITE_REG+STATUS,state); 	
-
-	SPI_NRF_WriteReg(FLUSH_TX,NOP);		//清除TX FIFO寄存器
-
-	/*判断中断类型*/    
-	if(state&MAX_RT)					//达到最大重发次数
-		 return MAX_RT; 
-	else if(state&TX_DS)				//发送完成
-		return TX_DS;
-	else						  
-		return ERROR;					//其他原因发送失败
+	
+	return 1;
 }
 
 /**
@@ -420,6 +411,54 @@ u8 NRF_Rx_Dat(u8 *rxbuf)
 		return ERROR;                    //没收到任何数据
 }
 
+void EXTI1_IRQHandler()
+{
+	u8 state;
+	u8 status = 0;                 //发送返回的状态
+
+	if( EXTI_GetITStatus(EXTI_Line1) != RESET ) 
+	{
+		/****************处理上一次发送结果*************/
+			
+		/*读取状态寄存器的值 */
+		state = SPI_NRF_ReadReg(STATUS);
+		/*清除TX_DS或MAX_RT中断标志*/
+		SPI_NRF_WriteReg(NRF_WRITE_REG+STATUS,state); 	
+	  	/*清除TX FIFO寄存器*/
+		SPI_NRF_WriteReg(FLUSH_TX,NOP);
+
+		if(state&MAX_RT)					//达到最大重发次数
+			status=MAX_RT; 
+		else if(state&TX_DS)				//上次发送完成
+			status=TX_DS;
+		else
+			status=ERROR;					//其他原因发送失败
+		
+		//上次发送结束检测
+		if( (status==TX_DS) || (status==MAX_RT) )  //上一次发送成功或达到最大重发次数
+		{
+			tail++;
+			if(tail >= __NRF_EXIT_SEND_BUFFER)
+			{
+				tail=0;
+			}
+		}
+		
+		/*********判断是否开启下一次发送*****************/
+	
+		if(tail == head)
+		{
+			NRF_EXIT(0);  		//关闭发送完成中断
+			disable_flag=1;
+		}
+		else
+		{
+			NRF_Tx_Dat(&SPI_TX_BUF[tail][0]);
+		}
+		
+		EXTI_ClearITPendingBit(EXTI_Line1);
+	}
+}
 /*
 
 临时的NRF发送函数，按字节输入
@@ -427,48 +466,75 @@ u8 NRF_Rx_Dat(u8 *rxbuf)
 没有发送超时功能
 
 */
+
+
 uint8_t NRF_Send_Counter = 0;
-u8 NRF_Send(u8 Data)
+void NRF_Send(u8 Data)
 {
-	u8 status = 0;
-	u8 send_counter = 0;
+	u8 i;
 	
 	TX_BUF[NRF_Send_Counter] = Data;	//存入发送数组
 	NRF_Send_Counter++;
 	
 	if(NRF_Send_Counter>=TX_PLOAD_WIDTH)	//发送缓冲区满
-	{		
+	{
 		//清零计数器
 		NRF_Send_Counter = 0;
 		
-		//进入发送流程
-		
-		/*
-			#define MAX_RT      0x10 //达到最大重发次数中断标志位
-			#define TX_DS		0x20 //发送完成中断标志位	  
-			#define RX_DR		0x40 //接收到数据中断标志位
-		*/
-		
-		//自动重发
-		send_counter = 20;		//自动重发计数
-		while(send_counter>0)	
+		/****装入队列******/
+
+		for(i=0;i<=31;i++)
 		{
-			send_counter--;
-			status = NRF_Tx_Dat(TX_BUF);	//发送数据，获取发送状态
-			
-			if(status == TX_DS)
-				return 1;	//发送成功
+      		SPI_TX_BUF[head][i]=TX_BUF[i];
 		}
 		
-		//printf("NRF Send Error!\r\n");
-		return 2;	//发送失败
+		if(disable_flag == 1)
+		{
+			NRF_Tx_Dat(&SPI_TX_BUF[head][0]);
+			NRF_EXIT(1);
+			disable_flag=0;
+		}
+		
+		head++;
+		if(head >= __NRF_EXIT_SEND_BUFFER)
+		{
+			head=0;
+		}
 	}
-	return 0;	//发送缓冲区未满
+}
+
+void NRF_EXIT(u8 en)
+{
+	EXTI_InitTypeDef EXTI_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	/* 连接 EXTI 中断源 到key1引脚 */
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB, EXTI_PinSource1);
+
+	/* 选择 EXTI 中断源 */
+	EXTI_InitStructure.EXTI_Line = EXTI_Line1;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+	if(en)
+		EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	else
+		EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+	EXTI_Init(&EXTI_InitStructure);
+	 
+	/* 配置 NVIC */
+  
+	/* 配置中断源 */
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
 void NRF24L01_Init(void)
 {
 	SPI_NRF_Init();
+	NRF_EXIT(0);    //初始化发送完成中断
 	if(NRF_Check() != 0)
 	{
 		printf("NRF初始化成功！\r\n");
@@ -481,6 +547,7 @@ void NRF24L01_Init(void)
 		NRF24L01_State = 0;
 	}
 }
+
 
 /*********************************************END OF FILE**********************/
 
