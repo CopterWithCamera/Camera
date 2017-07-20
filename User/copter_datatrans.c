@@ -150,7 +150,7 @@ void Camera_Send_Position(void)
 	Send_to_Copter(Data_Buffer,cnt);
 }
 
-//发送位置信息
+//发送状态信息
 void Camera_Send_Status(void)
 {
 	float tmp_f;
@@ -162,7 +162,7 @@ void Camera_Send_Status(void)
 	Data_Buffer[cnt++] = 0xAF;
 	
 	//功能字
-	Data_Buffer[cnt++] = 0x01;
+	Data_Buffer[cnt++] = 0x02;
 	
 	//内容
 	tmp_f = fps;							//采图速率
