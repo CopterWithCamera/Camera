@@ -6,6 +6,7 @@
 
 void Camera_Receive_Handle(unsigned char data);
 void Camera_Data_Send(void);
+void Camera_Send_Get_Image_Flag(u8 mode);
 
 extern float height_ultra;		//ultra.relative_height*10
 extern float height_LPF;		//sonar.displacement

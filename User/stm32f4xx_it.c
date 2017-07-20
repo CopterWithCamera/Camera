@@ -34,6 +34,7 @@
 #include "./key/bsp_exti.h"
 #include "image_processing.h"
 #include "include.h"
+#include "copter_datatrans.h"
 
 /** @addtogroup STM32F429I_DISCOVERY_Examples
   * @{
@@ -226,6 +227,12 @@ void DCMI_IRQHandler(void)
 			//换完之后新图就位，开启新图完成标志位
 			//表示 CAMERA_BUFFER_ARRAY 区域中已经提供了一张新图用于运算
 			image_updata_flag = 1;
+			
+			Camera_Send_Get_Image_Flag(1);	//发送新运算开启+采图标志
+		}
+		else
+		{
+			Camera_Send_Get_Image_Flag(0);	//单纯采图
 		}
 		
 		OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//空间交换已经完成后，再开启新的DMA（保证DMA的对于区域已经被更新）

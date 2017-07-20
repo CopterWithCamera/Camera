@@ -186,6 +186,24 @@ void Camera_Send_Status(void)
 	Send_to_Copter(Data_Buffer,cnt);
 }
 
+//发送位置信息
+void Camera_Send_Get_Image_Flag(u8 mode)
+{
+	u8 cnt = 0;
+	
+	//帧头
+	Data_Buffer[cnt++] = 0xAA;	
+	Data_Buffer[cnt++] = 0xAF;
+	
+	//功能字
+	Data_Buffer[cnt++] = 0x03; 
+	
+	//内容
+	Data_Buffer[cnt++] = mode;
+	
+	Send_to_Copter(Data_Buffer,cnt);
+}
+
 //向飞控发送数据
 //每次运算结束自动调用此函数发送信息
 void Camera_Data_Send(void)
