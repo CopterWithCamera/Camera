@@ -67,8 +67,7 @@ u8 NRF_Tx_Dat(u8 *txbuf);
 u8 NRF_Rx_Dat(u8 *rxbuf);
 u8 NRF_Check(void); 
 
-void NRF_Send(u8 Data);
+u8 NRF_Send(u8 Data);
 void NRF24L01_Init(void);
-void NRF_EXIT(u8 en);
 
 #endif /* __SPI_NRF_H */ 

@@ -326,6 +326,10 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
 }
 
 float tmp;
+float last_bias = 0;	//上一次的偏移
+float last_tmp1 = 0;	//上一次运算的一个输出参数
+u8 in_flag = 0;			//识别到的线是不是正确的线
+u8 out_flag = 0;		//偏出时指示偏出方向
 void Image_Fix(void)	//图像算法
 {
 	tuxiang_ver1(gray_column_array,&length,&tmp);
