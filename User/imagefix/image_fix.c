@@ -52,7 +52,7 @@ float b_e[3840] __EXRAM;
 float weight_matric[1380] __EXRAM;
 void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
 {
-
+  u8 counterrrr = 0;
   int i0;
   int i;
   int j;
@@ -146,6 +146,7 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
   flag = false;
   pre_threshold = 20.0;
   delivery_threshold = 0.0;
+  
   while (!flag) {
     for (i = 0; i < 46; i++) {
       for (j = 0; j < 78; j++) {
@@ -163,16 +164,27 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
         }
       }
     }
-
+	
     delivery_threshold = (more_value / more_counter + less_value / less_counter)
       / 2.0f;
+	if(less_counter > 3500)
+	{
+		speed = 1;
+		break;
+	}
+	else
+	{
+		speed = 0;
+	}
 
     /* %求分割后的阈值 */
     if (fabs(delivery_threshold - pre_threshold) < 0.05f) {
       /* % 与预先设置的阈值做对比 */
       flag = true;
     }
-
+	counterrrr++;
+	if(counterrrr > 10)
+		break;
     pre_threshold = delivery_threshold;
     more_value = 0.0;
     less_value = 0.0;
@@ -326,10 +338,6 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
 }
 
 float tmp;
-float last_bias = 0;	//上一次的偏移
-float last_tmp1 = 0;	//上一次运算的一个输出参数
-u8 in_flag = 0;			//识别到的线是不是正确的线
-u8 out_flag = 0;		//偏出时指示偏出方向
 void Image_Fix(void)	//图像算法
 {
 	tuxiang_ver1(gray_column_array,&length,&tmp);

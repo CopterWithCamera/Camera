@@ -45,7 +45,6 @@ unsigned char mode = 0;
 u8 flag_Image = 0;
 u8 flag_Result = 0;
 u8 flag_Wave = 0;
-u8 flag_Sd_original = 0;
 u8 flag_Sd_gray = 0;
 u8 flag_Sd_result = 0;
 
@@ -300,45 +299,6 @@ void Send_Parameter_Mode(void)
 	Data_Output(ch);
 }
 
-void Data_Output_Ctrl(unsigned char cmd)
-{
-	switch(cmd)
-	{
-		case 1:
-			flag_Image = 1;
-			break;
-		case 2:
-			flag_Image = 0;
-			break;
-		case 3:
-			flag_Result = 1;
-			break;
-		case 4:
-			flag_Result = 0;
-			break;
-		case 5:
-			flag_Wave = 1;
-			break;
-		case 6:
-			flag_Wave = 0;
-			break;
-		case 7:
-			flag_Fps = 1;
-			break;
-		case 8:
-			flag_Fps = 0;
-			break;
-		case 9:
-			flag_Sd_original = 1;
-			break;
-		case 10:
-			flag_Sd_original = 0;
-			break;
-		default:
-			break;
-	}
-}
-
 void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 {
 	switch(mode)
@@ -346,9 +306,8 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 		case 0:
 			flag_Image = 0;
 			flag_Result = 0;
-			flag_Wave = 1;
-			flag_Sd_original = 0;
-			flag_Sd_gray = 0;
+			flag_Wave = 0;
+			flag_Sd_gray = 1;
 			flag_Sd_result = 0;
 		break;
 		
@@ -356,7 +315,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 1;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd_original = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
 		break;
@@ -365,7 +323,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 0;
 			flag_Result = 1;
 			flag_Wave = 0;
-			flag_Sd_original = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
 		break;
@@ -374,7 +331,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 1;
-			flag_Sd_original = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
 		break;
@@ -383,7 +339,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd_original = 1;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
 		break;
@@ -392,7 +347,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd_original = 0;
 			flag_Sd_gray = 1;
 			flag_Sd_result = 0;
 		break;
@@ -401,7 +355,6 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd_original = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 1;
 		break;
