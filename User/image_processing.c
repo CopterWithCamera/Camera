@@ -304,59 +304,80 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 	switch(mode)
 	{
 		case 0:
+			//工作模式，不进行数据链发送
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
-			flag_Sd_gray = 1;
+			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
+			flag_Fps = 0;
+			flag_Mode = 0;
 		break;
 		
 		case 1:
+			//监测模式，只发送运行状态
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+			flag_Fps = 1;
+			flag_Mode = 1;
+		break;
+		
+		case 2:
+			//原图
 			flag_Image = 1;
 			flag_Result = 0;
 			flag_Wave = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 0;
-		break;
-		
-		case 2:
-			flag_Image = 0;
-			flag_Result = 1;
-			flag_Wave = 0;
-			flag_Sd_gray = 0;
-			flag_Sd_result = 0;
+			flag_Fps = 1;
+			flag_Mode = 1;
 		break;
 		
 		case 3:
-			flag_Image = 0;
-			flag_Result = 0;
-			flag_Wave = 1;
-			flag_Sd_gray = 0;
-			flag_Sd_result = 0;
-		break;
-		
-		case 4:
-			flag_Image = 0;
-			flag_Result = 0;
-			flag_Wave = 0;
-			flag_Sd_gray = 0;
-			flag_Sd_result = 0;
-		break;
-		
-		case 5:
+			//存灰度图
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
 			flag_Sd_gray = 1;
 			flag_Sd_result = 0;
+			flag_Fps = 1;
+			flag_Mode = 1;
+		break;
+		
+		case 4:
+			//波形
+			flag_Image = 0;
+			flag_Result = 0;
+			flag_Wave = 1;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+			flag_Fps = 1;
+			flag_Mode = 1;
+		break;
+		
+		case 5:
+			//发结果图
+			flag_Image = 0;
+			flag_Result = 1;
+			flag_Wave = 0;
+			flag_Sd_gray = 0;
+			flag_Sd_result = 0;
+			flag_Fps = 1;
+			flag_Mode = 1;
 		break;
 		
 		case 6:
+			//存结果图
 			flag_Image = 0;
 			flag_Result = 0;
 			flag_Wave = 0;
 			flag_Sd_gray = 0;
 			flag_Sd_result = 1;
+			flag_Fps = 1;
+			flag_Mode = 1;
 		break;
 		
 		default:
@@ -412,10 +433,6 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 	else
 	{
 		//运算后发送的内容
-		
-		//向飞控发送内容
-		
-		Camera_Data_Send();	//发送运算结果数据
 	
 		//向上位机发送内容
 		
@@ -484,10 +501,12 @@ void Image_Process(void)
 	}
 
 	Image_Output(0);	//数据输出（原始图像相关内容）
+	
 	Image_Fix();		//图像处理函数
-	Column_To_Line();	//从列向量矩阵恢复为行矩阵
+	Camera_Data_Send();	//向飞控发送内容          //发送运算结果数据
+	
 	Image_Output(1);	//数据输出（运算后内容）
-
+//	Column_To_Line();	//从列向量矩阵恢复为行矩阵
 	processing_ready = 1;	//运算结束置1
 
 }

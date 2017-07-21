@@ -19,7 +19,7 @@
 
 //显示内容：
 #define __DISPLAY_IMAGE		//发送灰度图像
-#define __DISPLAY_RESULT	//发送运算结果图像
+//#define __DISPLAY_RESULT	//发送运算结果图像
 #define __DISPALY_WAVE		//发送波形
 #define __PARAMETER_FPS		//发送FPS
 #define __PARAMETER_MODE	//发送MODE参数
@@ -35,9 +35,8 @@
 
 //存储内容：
 
-#define __SD_SAVE_ORIGINAL	//保存原始彩色图
 #define __SD_SAVE_GRAY		//保存灰度矩阵生成的图像
-#define __SD_SAVE_RESULT	//保存运算结果矩阵生成的图像
+//#define __SD_SAVE_RESULT		//保存运算结果矩阵生成的图像
 
 //*************************************
 
