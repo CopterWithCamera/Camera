@@ -48,9 +48,9 @@ u8 flag_Wave = 0;
 u8 flag_Sd_gray = 0;
 u8 flag_Sd_result = 0;
 
-//参数传输flag（一般要开启）
-u8 flag_Fps = 1;
-u8 flag_Mode = 1;
+//参数传输flag
+u8 flag_Fps = 0;
+u8 flag_Mode = 0;
 
 //生成灰度矩阵
 void Creat_Gray(void)
