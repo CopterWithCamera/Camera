@@ -167,7 +167,7 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
 	
     delivery_threshold = (more_value / more_counter + less_value / less_counter)
       / 2.0f;
-	if(less_counter > 3500)
+	if(less_counter > 3553)
 	{
 		speed = 1;
 		break;
