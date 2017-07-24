@@ -206,9 +206,7 @@ int main(void)
 	My_Camera_Init();	//≥ı ºªØOV5640
 	
 	#ifdef __NRF_DISPLAY
-	
 		NRF24L01_Init();	//NRF24L01
-	
 	#endif
 	
 	#ifdef __SD_SAVE
