@@ -135,13 +135,13 @@ void Camera_Send_Position(void)
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	tmp_f = angle;							//角度
+	tmp_f = length_pitch;					//pitch偏移
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	tmp_f = speed;							//速度
+	tmp_f = angle;							//角度
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);

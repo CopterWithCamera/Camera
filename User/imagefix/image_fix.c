@@ -20,8 +20,8 @@ typedef u8 boolean_T;
 	  4.result_array[IMG_WIDTH*IMG_HEIGHT]							结果图像数组
 	  5.result_column_array[IMG_WIDTH*IMG_HEIGHT]					结果列向量数组
 	  3.float length;												对外输出参数1（将数值赋值给变量后将自动输出）
-	  4.float angle													对外输出参数2
-	  4.float speed;												对外输出参数3（将数值赋值给变量后将自动输出）
+	  4.float length_pitch;											对外输出参数2
+	  4.float angle;												对外输出参数3（将数值赋值给变量后将自动输出）
 	  5.使用 __EXRAM 尾缀向外部SDRAM中定义大数组    	例子：int array[1000] __EXRAM;
 */
 
@@ -169,12 +169,12 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
       / 2.0f;
 	if(less_counter > 3553)
 	{
-		speed = 1;
+		length_pitch = 1;
 		break;
 	}
 	else
 	{
-		speed = 0;
+		length_pitch = 0;
 	}
 
     /* %求分割后的阈值 */

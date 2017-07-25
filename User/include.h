@@ -11,34 +11,31 @@
 //设置变量定义到“EXRAM”节区的宏
 #define __EXRAM  __attribute__ ((section ("EXRAM")))
 
-//*************************************
-
 //======== 图像传输 =================
 
 #define __NRF_DISPLAY
 
 //显示内容：
 #define __DISPLAY_IMAGE		//发送灰度图像
-//#define __DISPLAY_RESULT	//发送运算结果图像
+#define __DISPLAY_RESULT	//发送运算结果图像
 #define __DISPALY_WAVE		//发送波形
 #define __PARAMETER_FPS		//发送FPS
 #define __PARAMETER_MODE	//发送MODE参数
-
-//======== 输出串口选择 ==============
-
-#define DEBUG_USART			USART1
-#define DATA_OUT_USART		USART2
 
 //======== SD卡存图 ==================
 
 #define __SD_SAVE
 
 //存储内容：
-
 #define __SD_SAVE_GRAY		//保存灰度矩阵生成的图像
-//#define __SD_SAVE_RESULT		//保存运算结果矩阵生成的图像
+#define __SD_SAVE_RESULT		//保存运算结果矩阵生成的图像
 
-//*************************************
+//======== 输出串口选择 ==============
+
+#define DEBUG_USART			USART1
+#define DATA_OUT_USART		USART2
+
+//===================================
 
 extern int SD_State;
 extern int NRF24L01_State;

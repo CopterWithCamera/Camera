@@ -36,10 +36,10 @@ uint8_t result_column_array[IMG_WIDTH*IMG_HEIGHT] __EXRAM;	//列向量矩阵
 //输出参数
 float length;	//偏差
 float angle;
-float speed;
+float length_pitch;
 
-//传输数据的模式
-unsigned char mode = 0;
+//运行模式
+unsigned char mode = 0;		//mode在这里！！！
 
 //控制传输的flag
 u8 flag_Image = 0;
@@ -185,7 +185,7 @@ void float_char(float f,unsigned char *s)
     *(s+3) = *(p+3);
 }
 
-//输出波形（length、angle、speed），用山外多功能调试助手查看
+//输出波形（length、length_pitch、angle、），用山外多功能调试助手查看
 void Display_Wave(void)
 {
 	uint8_t ch;
@@ -211,7 +211,7 @@ void Display_Wave(void)
 	Data_Output(ch);
 	
 	//发送通道二
-	float_char(angle,a);
+	float_char(length_pitch,a);
 	ch = a[0];
 	Data_Output(ch);
 	ch = a[1];
@@ -222,7 +222,7 @@ void Display_Wave(void)
 	Data_Output(ch);
 	
 	//发送通道三
-	float_char(speed,a);
+	float_char(angle,a);
 	ch = a[0];
 	Data_Output(ch);
 	ch = a[1];
@@ -397,12 +397,12 @@ void Mode_Change(void)	//在按键中断中调用
 
 }
 
-void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运算的同时传输，运算后图只能在运算结束后传输）
+void Image_Output(u8 sendmode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运算的同时传输，运算后图只能在运算结束后传输）
 {
 	//*******************************************************************
 	//输出信息
 	
-	if(!mode)
+	if(!sendmode)
 	{
 		//运算开始前发送内容（不需要运算的内容）
 		
@@ -429,6 +429,23 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 				Send_Parameter_Mode();
 		
 		#endif
+		
+		#ifdef __SD_SAVE		//SD存图
+			
+			#if defined(__SD_SAVE_GRAY)
+			
+				if(SD_State)	//如果SD卡挂载成功
+				{
+					if(flag_Sd_gray)
+					{
+						TO_SDcard_OneFile(1);		//灰度图
+						TO_SDcard_Height();			//记录高度数据
+					}
+				}
+			
+			#endif
+			
+		#endif
 	}
 	else
 	{
@@ -454,20 +471,18 @@ void Image_Output(u8 mode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运
 			
 		#ifdef __SD_SAVE		//SD存图
 
-			if(SD_State)	//如果SD卡挂载成功
-			{
-				if(flag_Sd_gray)
+			#if defined(__SD_SAVE_RESULT)
+			
+				if(SD_State)	//如果SD卡挂载成功
 				{
-					TO_SDcard_OneFile(1);		//灰度图
-					TO_SDcard_Height();			//记录高度数据
+					if(flag_Sd_result)
+					{
+						TO_SDcard_OneFile(2);		//灰度图
+						TO_SDcard_Height();			//记录高度数据
+					}
 				}
-				
-				if(flag_Sd_result)
-				{
-					TO_SDcard_OneFile(2);		//灰度图
-					TO_SDcard_Height();			//记录高度数据
-				}
-			}
+			
+			#endif
 
 		#endif
 	}
@@ -486,12 +501,8 @@ void Image_Process(void)
 	
 	image_updata_flag = 0;	//新图已经开始被使用，新图标志清零
 
-	processing_fps_temp++;	//计算运算帧率
-	
-	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
-	Creat_Column();	//转换为列向量矩阵
-	
 	//处理速率计算
+	processing_fps_temp++;	//计算运算帧率	
 	if(Task_Delay[1]==0)
 	{
 		Task_Delay[1]=5000; //此值每1ms会减1，减到0才可以重新进来这里
@@ -499,6 +510,10 @@ void Image_Process(void)
 		processing_fps = processing_fps_temp/5.0f;	//计算当前计算帧率
 		processing_fps_temp =0;						//重置
 	}
+	
+	//生成图像数组
+	Creat_Gray();	//生成灰度矩阵，数据来自显示缓冲
+	Creat_Column();	//转换为列向量矩阵
 
 	Image_Output(0);	//数据输出（原始图像相关内容）
 	
@@ -509,8 +524,9 @@ void Image_Process(void)
 		Camera_Data_Send();	//向飞控发送内容          //发送运算结果数据
 	}
 	
-	Image_Output(1);	//数据输出（运算后内容）
 //	Column_To_Line();	//从列向量矩阵恢复为行矩阵
+//	Image_Output(1);	//数据输出（运算后内容）
+
 	processing_ready = 1;	//运算结束置1
 
 }
