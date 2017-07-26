@@ -45,60 +45,67 @@ float sum(const float x[46])
   return y;
 }
 
-float b_a[3840] __EXRAM;
-float e[3840] __EXRAM;
-short f[3840] __EXRAM;
-float b_e[3840] __EXRAM;
-float weight_matric[1380] __EXRAM;
-void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
+void test_simple(const unsigned char a[3840], float In_last_bias, float
+                 In_last_angle, float *Out_bias, float *Out_angle, float
+                 *Out_last_bias, float *Out_last_angle)
 {
-  u8 counterrrr = 0;
+  unsigned char b_a[3840];
+  short e[3840];
+  short edge1[3840];
   int i0;
   int i;
   int j;
-
   short b[9];
   float more_value;
   float less_value;
   float more_counter;
-  float less_counter;
-  boolean_T flag;
   int b_min;
-  float pre_threshold;
+  float less_counter;
   int k;
+  boolean_T flag;
+  int b_max;
+  float pre_threshold;
   float delivery_threshold;
-  float b_max;
-  float shuzu[61];
-  float summ;
-  int cishu;
-  signed char bias[46];
+  float cicici;
+  int test_flag;
+  boolean_T exitg3;
+  float bias_array[80];
+  float bias_array1[80];
   float yubei;
   boolean_T exitg2;
+  float bias_aver;
   boolean_T exitg1;
-  int high;
-  int low;
-  int b_j;
-  float thod;
-  float bias1[46];
+  float biaozhuncha;
+  float c_a;
+  float bias;
+  float sum_X;
+  float sum_Y;
+  float sum_XY;
+  float sum_Xsquare;
 
-  /* ÅòÕÍ */
+  /*  clear all; */
+  /* % ???????????????? */
+  /*  a=imread('529.bmp'); */
+  /*  a=rgb2gray(a); */
+  /* % ??-??-???? */
+  /* ?? */
   for (i0 = 0; i0 < 3840; i0++) {
     b_a[i0] = a[i0];
-    e[i0] = 0.0;
-    f[i0] = 0;
+    e[i0] = 0;
+    edge1[i0] = 0;
   }
 
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      b[0] = (short)((int)b_a[i + 48 * j] - 1);
-      b[1] = (short)((int)b_a[i + 48 * (j + 1)] - 2);
-      b[2] = (short)((int)b_a[i + 48 * (2 + j)] - 3);
-      b[3] = (short)((int)b_a[(i + 48 * j) + 1] - 4);
-      b[4] = (short)((int)b_a[(i + 48 * (j + 1)) + 1] - 5);
-      b[5] = (short)((int)b_a[(i + 48 * (2 + j)) + 1] - 6);
-      b[6] = (short)((int)b_a[(i + 48 * j) + 2] - 7);
-      b[7] = (short)((int)b_a[(i + 48 * (j + 1)) + 2] - 8);
-      b[8] = (short)((int)b_a[(i + 48 * (2 + j)) + 2] - 9);
+      b[0] = (short)(b_a[i + 48 * j] - 1);
+      b[1] = (short)(b_a[i + 48 * (j + 1)] - 2);
+      b[2] = (short)(b_a[i + 48 * (2 + j)] - 3);
+      b[3] = (short)(b_a[(i + 48 * j) + 1] - 4);
+      b[4] = (short)(b_a[(i + 48 * (j + 1)) + 1] - 5);
+      b[5] = (short)(b_a[(i + 48 * (2 + j)) + 1] - 6);
+      b[6] = (short)(b_a[(i + 48 * j) + 2] - 7);
+      b[7] = (short)(b_a[(i + 48 * (j + 1)) + 2] - 8);
+      b[8] = (short)(b_a[(i + 48 * (2 + j)) + 2] - 9);
       b_min = 255;
       for (k = 0; k < 9; k++) {
         if (b[k] < b_min) {
@@ -106,240 +113,327 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
         }
       }
 
-      e[(i + 48 * (j + 1)) + 1] = b_min;
+      e[(i + 48 * (j + 1)) + 1] = (short)b_min;
     }
   }
 
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      b[0] = (short)(1 + (int)e[i + 48 * j]);
-      b[1] = (short)(2 + (int)e[i + 48 * (j + 1)]);
-      b[2] = (short)(3 + (int)e[i + 48 * (2 + j)]);
-      b[3] = (short)(4 + (int)e[(i + 48 * j) + 1]);
-      b[4] = (short)(5 + (int)e[(i + 48 * (j + 1)) + 1]);
-      b[5] = (short)(6 + (int)e[(i + 48 * (2 + j)) + 1]);
-      b[6] = (short)(7 + (int)e[(i + 48 * j) + 2]);
-      b[7] = (short)(8 + (int)e[(i + 48 * (j + 1)) + 2]);
-      b[8] = (short)(9 + (int)e[(i + 48 * (2 + j)) + 2]);
-      b_max = 0.0;
+      b[0] = (short)(1 + e[i + 48 * j]);
+      b[1] = (short)(2 + e[i + 48 * (j + 1)]);
+      b[2] = (short)(3 + e[i + 48 * (2 + j)]);
+      b[3] = (short)(4 + e[(i + 48 * j) + 1]);
+      b[4] = (short)(5 + e[(i + 48 * (j + 1)) + 1]);
+      b[5] = (short)(6 + e[(i + 48 * (2 + j)) + 1]);
+      b[6] = (short)(7 + e[(i + 48 * j) + 2]);
+      b[7] = (short)(8 + e[(i + 48 * (j + 1)) + 2]);
+      b[8] = (short)(9 + e[(i + 48 * (2 + j)) + 2]);
+      b_max = 0;
       for (k = 0; k < 9; k++) {
-        if (b[k] > (int)b_max) {
+        if (b[k] > b_max) {
           b_max = b[k];
         }
       }
 
-      f[(i + 48 * (j + 1)) + 1] = (short)b_max;
+      edge1[(i + 48 * (j + 1)) + 1] = (short)fabs(b_max - e[(i + 48 * (j + 1)) +
+        1]);
     }
   }
 
-  for (i0 = 0; i0 < 3840; i0++) {
-    b_e[i0] = e[i0] - (float)f[i0];
-  }
-
-  b_abs(b_e, b_a);
-
-  /* % ×î´óÀà¼ä²î Çó¶þÖµ»¯ãÐÖµ */
-  more_value = 0.0;
-  less_value = 0.0;
-  more_counter = 0.0;
-  less_counter = 0.0;
+  /*  figure; */
+  /*  imshow(edge1); */
+  /*  title('??') */
+  /* % ??? ?????? */
+  /* ????????? */
+  /* ??????(cicic==0) */
+  /* test_flag ?????????????,test_flag=0???,=200???,??test_flag???0 */
+  more_value = 0.0f;
+  less_value = 0.0f;
+  more_counter = 0.0f;
+  less_counter = 0.0f;
   flag = false;
-  pre_threshold = 20.0;
-  delivery_threshold = 0.0;
-  
-  while (!flag) {
+  pre_threshold = 20.0f;
+  delivery_threshold = 0.0f;
+  cicici = 0.0f;
+  test_flag = 0;
+  exitg3 = false;
+  while ((!exitg3) && (!flag)) {
     for (i = 0; i < 46; i++) {
       for (j = 0; j < 78; j++) {
-        if (b_a[(i + 48 * (j + 1)) + 1] > pre_threshold) {
-          /* %ÓëÔ¤ÏÈÉèÖÃµÄãÐÖµ×ö¶Ô±È */
-          more_value += b_a[(i + 48 * (j + 1)) + 1];
+        if (edge1[(i + 48 * (j + 1)) + 1] > pre_threshold) {
+          /* %??????????? */
+          more_value += (float)edge1[(i + 48 * (j + 1)) + 1];
 
-          /* % ÇóºÍ */
+          /* % ?? */
           more_counter++;
 
-          /* % ÊýÁ¿+1 */
+          /* % ??+1 */
         } else {
-          less_value += b_a[(i + 48 * (j + 1)) + 1];
+          less_value += (float)edge1[(i + 48 * (j + 1)) + 1];
           less_counter++;
         }
       }
     }
-	
-    delivery_threshold = (more_value / more_counter + less_value / less_counter)
-      / 2.0f;
-	if(less_counter > 3553)
-	{
-		length_pitch = 1;
-		break;
-	}
-	else
-	{
-		length_pitch = 0;
-	}
 
-    /* %Çó·Ö¸îºóµÄãÐÖµ */
-    if (fabs(delivery_threshold - pre_threshold) < 0.05f) {
-      /* % ÓëÔ¤ÏÈÉèÖÃµÄãÐÖµ×ö¶Ô±È */
-      flag = true;
+    /* ??test_flag????? */
+    if (less_counter > 3553.0f) {
+      test_flag = 200;
+      exitg3 = true;
+    } else {
+      delivery_threshold = (more_value / more_counter + less_value /
+                            less_counter) / 2.0f;
+
+      /* %??????? */
+      if (fabs(delivery_threshold - pre_threshold) < 0.05f) {
+        /* % ??????????? */
+        flag = true;
+      }
+
+      pre_threshold = delivery_threshold;
+
+      /* ?????? */
+      cicici++;
+      if (cicici == 5.0f) {
+        exitg3 = true;
+      } else {
+        more_value = 0.0f;
+        less_value = 0.0f;
+        more_counter = 0.0f;
+        less_counter = 0.0f;
+      }
     }
-	counterrrr++;
-	if(counterrrr > 10)
-		break;
-    pre_threshold = delivery_threshold;
-    more_value = 0.0;
-    less_value = 0.0;
-    more_counter = 0.0;
-    less_counter = 0.0;
   }
 
-  /*  %% edge2 ÊÇ Ê¢·Å¶þÖµ»¯ºóµÄÍ¼Ïñ  */
-  /*  %%Í¼Ïñ¶þÖµ»¯ */
-  memset(&e[0], 0, 3840U * sizeof(float));
-
-  /* % ÀûÓÃÄ£°åÑ°ÕÒµÀÂ· */
-  /* %È¨Öµ¾ØÕó ÏÂÃæµÄÑ­»·ÊÇÃ¿¸öµãµÄÈ¨Öµ¼ÆËã·½·¨ */
+  /* % edge2 ? ????????? */
+  /* %????? */
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      if (b_a[(i + 48 * (j + 1)) + 1] < delivery_threshold) {
-        e[(i + 48 * (j + 1)) + 1] = 0.0;
+      if (edge1[(i + 48 * (j + 1)) + 1] <= delivery_threshold) {
+        edge1[(i + 48 * (j + 1)) + 1] = 0;
       } else {
-        e[(i + 48 * (j + 1)) + 1] = 255.0;
+        edge1[(i + 48 * (j + 1)) + 1] = 255;
       }
-    }
-
-    for (j = 0; j < 30; j++) {
-      weight_matric[i + 46 * j] = 1.0f - sqrt((24.5f - (1.0f + (float)i)) * (24.5f
-        - (1.0f + (float)i)) + (15.5f - (1.0f + (float)j)) * (15.5f - (1.0f +
-        (float)j))) / 25.93260495977988f;
     }
   }
 
-  memset(&shuzu[0], 0, 61U * sizeof(float));
-
-  /* %´æ´¢Ã¿Ò»¸öÄ£°åËã³öÀ´µÄÆ½¾ù»Ò¶ÈÖµ */
-  summ = 0.0;
-
-  /* %Ã¿Ò»¸öÄ£°åµÄ»Ò¶ÈÖµ×ÜÖµ */
-  for (cishu = 0; cishu < 51; cishu++) {
-    /* % Ò»¸ö48*20µÄÄ£°åÉ¨¹ý 48*80µÄÍ¼ÏñÐèÒª×ß61´Î */
+  /* %????test_flag???0,???0 ???????,?200??????????? */
+  if (test_flag == 0) {
+    memset(&bias_array[0], 0, 80U * sizeof(float));
+    memset(&bias_array1[0], 0, 80U * sizeof(float));
+    yubei = 0.0f;
     for (i = 0; i < 46; i++) {
-      for (j = 0; j < 30; j++) {
-        summ += e[i + 48 * (cishu + j)] * weight_matric[i + 46 * j];
-
-        /* %¶ÔÓ¦Î»ÖÃµÄÍ¼ÏñÖµ³ËÒÔÄ£°å¶ÔÓ¦Î»ÖÃµÄÈ¨Öµ */
-      }
-    }
-
-    shuzu[cishu] = summ / 920.0f;
-
-    /* %´æ´¢Æ½¾ù»Ò¶ÈÖµ */
-    summ = 0.0;
-
-    /* %¹é0 */
-  }
-
-  /* %Ñ°ÕÒ×î´ó»Ò¶ÈÖµ Î»ÖÃ´æ´¢ÔÚplace±äÁ¿ÖÐ  ¼´ÆðÊ¼ÁÐ */
-  if (shuzu[0] > shuzu[1]) {
-    b_max = shuzu[0];
-    *place = 1.0;
-  } else {
-    b_max = shuzu[1];
-    *place = 2.0;
-  }
-
-  for (i = 0; i < 58; i++) {
-    if (b_max < shuzu[i + 2]) {
-      *place = 3.0f + (float)i;
-      b_max = shuzu[3 + i];
-    }
-  }
-
-  /*   figure; */
-  /*   imshow(edge2(:,place:place+29)); %%²âÊÔÏÔÊ¾ */
-  for (i = 0; i < 46; i++) {
-    bias[i] = 0;
-  }
-
-  if (*place > 30.0f) {
-    for (i = 0; i < 45; i++) {
-      i0 = (int)(((float)*place + 29.0F) + (1.0F - (float)*place));
       j = 0;
       exitg2 = false;
-      while ((!exitg2) && (j <= i0 - 1)) {
-        b_j = (int)*place + j;
-        if (e[(48 * (b_j - 1) - i) + 45] - e[(48 * (b_j - 2) - i) + 45] == 255.0f)
-        {
-          bias[44 - i] = (signed char)b_j;
+      while ((!exitg2) && (j < 78)) {
+        if (edge1[(48 * (j + 1) - i) + 46] - edge1[(48 * (2 + j) - i) + 46] ==
+            255) {
+          bias_array[46 - i] = 2.0f + (float)j;
           exitg2 = true;
         } else {
           j++;
         }
       }
-    }
-  } else if (*place < 25.0f) {
-    for (i = 0; i < 45; i++) {
-      i0 = (int)-((float)*place + (-1.0F - ((float)*place + 29.0F)));
+
       j = 0;
       exitg1 = false;
-      while ((!exitg1) && (j <= i0 - 1)) {
-        b_j = ((int)*place - j) + 29;
-        if (e[(48 * (b_j - 1) - i) + 45] - e[(48 * b_j - i) + 45] == 255.0f) {
-          bias[44 - i] = (signed char)b_j;
+      while ((!exitg1) && (j < 78)) {
+        if (edge1[(48 * (78 - j) - i) + 46] - edge1[(48 * (77 - j) - i) + 46] ==
+            255) {
+          bias_array1[46 - i] = 79.0f + -(float)j;
           exitg1 = true;
         } else {
           j++;
         }
       }
     }
-  } else {
-    for (i = 0; i < 46; i++) {
-      bias[i] = 0;
+
+    if (fabs(sum(bias_array) - 1903.5f) > fabs(sum(bias_array1) - 1903.5f)) {
+      memcpy(&bias_array[0], &bias_array1[0], 80U * sizeof(float));
     }
-  }
 
-  yubei = 0.0;
-  if (bias[45] > bias[44]) {
-    high = bias[45];
-    low = bias[44];
-  } else {
-    high = bias[44];
-    low = bias[45];
-  }
-
-  thod = (float)(high - low) / 2.0f;
-  for (i = 0; i < 46; i++) {
-    bias1[i] = bias[i];
-  }
-
-  for (i = 0; i < 44; i++) {
-    if (fabs(bias[45 - i] - bias[44 - i]) > thod) {
-      if (fabs(bias[44 - i] - bias[43 - i]) > thod) {
-        bias1[44 - i] = bias[45 - i];
-      } else {
-        bias1[44 - i] = (float)(bias[45 - i] + bias[43 - i]) / 2.0f;
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias_array[i] == 0) {
+        yubei++;
       }
     }
-  }
 
-  if (fabs(bias[0] - bias[1]) > thod) {
-    bias1[0] = bias[1];
-  }
-
-  for (i = 0; i < 46; i++) {
-    if (bias1[45 - i] == 0.0f) {
-      yubei++;
+    /* ????????(?????????,?0??,??????) */
+    bias_aver = sum(bias_array) / (47.0f - yubei);
+    biaozhuncha = 0.0f;
+    for (i = 0; i < 46; i++) {
+      c_a = (float)(signed char)bias_array[i + 1] - bias_aver;
+      biaozhuncha += c_a * c_a;
     }
-  }
 
-  *quxian = sum(bias1) / (46.0f - yubei) - 40.0f;
-  if ((*place >= 25.0f) && (*place <= 30.0f)) {
-    *quxian = 0.0;
+    biaozhuncha = sqrt(biaozhuncha / (47.0f - yubei));
+    for (i = 0; i < 46; i++) {
+      if (fabs((float)(signed char)bias_array[i + 1] - bias_aver) > biaozhuncha)
+      {
+        bias_array[i + 1] = 0.0f;
+      }
+    }
+
+    /* ??????(??????????-??) */
+    yubei = 0.0f;
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias_array[i] == 0) {
+        yubei++;
+      }
+    }
+
+    bias = sum(bias_array) / (47.0f - yubei) - 40.5f;
+
+    /* ?????? */
+    if (fabs(bias) < 1.0f) {
+      bias = 0.0f;
+    }
+
+    *Out_last_bias = bias;
+    *Out_bias = bias;
+
+    /* ????,?????????????????????,???????? */
+    sum_X = 0.0f;
+    sum_Y = 0.0f;
+    sum_XY = 0.0f;
+    sum_Xsquare = 0.0f;
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias_array[i] != 0) {
+        sum_X += 1.0f + (float)i;
+        sum_Y += (float)(signed char)bias_array[i];
+        sum_XY += (float)((1 + i) * (signed char)bias_array[i]);
+        sum_Xsquare += (float)((1 + i) * (1 + i));
+      }
+    }
+
+    sum_X /= 47.0f - yubei;
+    sum_Y /= 47.0f - yubei;
+    sum_XY /= 47.0f - yubei;
+    sum_Xsquare /= 47.0f - yubei;
+    *Out_angle = atan((sum_XY - sum_X * sum_Y) / (sum_Xsquare - sum_X * sum_X)) *
+      180.0f / 3.1416f;
+
+    /* ???????,??????? */
+    /* ??+-2°????? */
+    if (fabs(*Out_angle) <= 2.0f) {
+      *Out_angle = 0.0f;
+    }
+
+    *Out_last_angle = *Out_angle;
+
+    /* ???0???30,??????????,?????? */
+    if (yubei > 37.0f) {
+      if (bias > 20.0f) {
+        *Out_bias = -100.0f;
+
+        /* ?????? */
+      } else {
+        if (bias < -20.0f) {
+          *Out_bias = 100.0f;
+
+          /* ?????? */
+        }
+      }
+    }
+
+    /*           for i=2:47 */
+    /*              if abs(bias_array1(i,1)-bias_aver)>2*biaozhuncha */
+    /*                  bias_array1(i,1)=0; */
+    /*              end */
+    /*           end */
+    /*           yubei=0; */
+    /*          for i=1:47 */
+    /*              if bias_array1(i,1)==0 */
+    /*                  yubei=yubei+1; */
+    /*              end */
+    /*          end */
+    /*  ???0???5 ?????,???????????,???row_bias */
+    /*          if yubei>=5 */
+    /*              bias_array=zeros(80,1); */
+    /*              bias_array1=zeros(80,1); */
+    /*              for j=2:79 */
+    /*                  for i=2:48 */
+    /*                      if edge1(i,j)-edge1(i-1,j)==255; */
+    /*                          bias_array(j,1)=i; */
+    /*                          break; */
+    /*                      end */
+    /*                  end */
+    /*              end */
+    /*              for j=2:79 */
+    /*                  for i=48:2 */
+    /*                      if edge1(i,j)-edge1(i-1,j)==255; */
+    /*                          bias_array(j,1)=i; */
+    /*                          break; */
+    /*                      end */
+    /*                  end */
+    /*              end */
+    /*  */
+    /*              if abs(sum(bias_array)-1560)>abs(sum(bias_array1)-1560) */
+    /*                  bias_array(:)=bias_array1(:); */
+    /*              end */
+    /* ????????(?????????,?0??,??????) */
+    /*              yubei1=0; */
+    /*              for i=1:80 */
+    /*                  if bias_array(i,1)==0 */
+    /*                      yubei1=yubei1+1; */
+    /*                  end */
+    /*              end */
+    /*              bias_aver=sum(bias_array)/(78-yubei1); */
+    /*              biaozhuncha=0; */
+    /*              for i=2:79 */
+    /*                  biaozhuncha=biaozhuncha+(bias_array(i,1)-bias_aver)^2; */
+    /*              end */
+    /*              biaozhuncha=sqrt(biaozhuncha/(78-yubei1)); */
+    /*              for i=2:78 */
+    /*                  if abs(bias_array(i,1)-bias_aver)>biaozhuncha */
+    /*                      bias_array(i,1)=0; */
+    /*                  end */
+    /*              end */
+    /* ??????(??????????-??) */
+    /*              yubei1=0; */
+    /*              for i=1:80 */
+    /*                  if bias_array(i,1)==0 */
+    /*                      yubei1=yubei1+1; */
+    /*                  end */
+    /*              end */
+    /*              row_bias=sum(bias_array)/(78-yubei1)-20; */
+    /* ?????? */
+    /*              if abs(row_bias)<1 */
+    /*                  row_bias=0; */
+    /*              end */
+    /* ????????,??????????last_place,???????????????? */
+    /*          end */
+  } else if (In_last_bias > 20.0f) {
+    *Out_bias = -100.0f;
+
+    /* ?????? */
+    *Out_last_bias = In_last_bias;
+    *Out_angle = In_last_angle;
+    *Out_last_angle = In_last_angle;
+  } else if (In_last_bias < -20.0f) {
+    *Out_bias = 100.0f;
+
+    /* ?????? */
+    *Out_last_bias = In_last_bias;
+    *Out_angle = In_last_angle;
+    *Out_last_angle = In_last_angle;
+  } else {
+    *Out_last_bias = In_last_bias;
+    *Out_angle = In_last_angle;
+    *Out_last_angle = In_last_angle;
+    *Out_bias = In_last_bias;
   }
 }
+
 
 float tmp;
 void Image_Fix(void)	//Í¼ÏñËã·¨
 {
-	tuxiang_ver1(gray_column_array,&length,&tmp);
+	static float last_length,last_angle,To_next_length,To_next_angle;
+	
+	test_simple(gray_column_array,last_length,last_angle,&length,&angle,&To_next_length,&To_next_angle);
+	last_length=To_next_length;
+	last_angle=To_next_angle;
+	
+	
 }
 
