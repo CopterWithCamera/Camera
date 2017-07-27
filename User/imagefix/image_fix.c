@@ -44,14 +44,16 @@ float sum(const float x[46])
 
   return y;
 }
-
+  unsigned char b_a[3840] __EXRAM;
+  short e[3840] __EXRAM;
+  short edge1[3840] __EXRAM;
+  float bias_array[80] __EXRAM;
+  float bias_array1[80] __EXRAM;
 void test_simple(const unsigned char a[3840], float In_last_bias, float
                  In_last_angle, float *Out_bias, float *Out_angle, float
                  *Out_last_bias, float *Out_last_angle)
 {
-  unsigned char b_a[3840];
-  short e[3840];
-  short edge1[3840];
+
   int i0;
   int i;
   int j;
@@ -69,8 +71,7 @@ void test_simple(const unsigned char a[3840], float In_last_bias, float
   float cicici;
   int test_flag;
   boolean_T exitg3;
-  float bias_array[80];
-  float bias_array1[80];
+
   float yubei;
   boolean_T exitg2;
   float bias_aver;
@@ -403,14 +404,14 @@ void test_simple(const unsigned char a[3840], float In_last_bias, float
     /* ????????,??????????last_place,???????????????? */
     /*          end */
   } else if (In_last_bias > 20.0f) {
-    *Out_bias = -100.0f;
+    *Out_bias = 100.0f;
 
     /* ?????? */
     *Out_last_bias = In_last_bias;
     *Out_angle = In_last_angle;
     *Out_last_angle = In_last_angle;
   } else if (In_last_bias < -20.0f) {
-    *Out_bias = 100.0f;
+    *Out_bias = -100.0f;
 
     /* ?????? */
     *Out_last_bias = In_last_bias;
