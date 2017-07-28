@@ -49,8 +49,8 @@ float sum(const float x[46])
   unsigned char b_a[3840] __EXRAM;
   short e[3840] __EXRAM;
   short edge1[3840] __EXRAM;
-  double bias_array[80] __EXRAM;
-  double bias_array1[80] __EXRAM;
+  float bias_array[80] __EXRAM;
+  float bias_array1[80] __EXRAM;
 
 
  void test_simple(const unsigned char a[3840], float In_last_bias, float
@@ -220,7 +220,8 @@ float sum(const float x[46])
   }
 
   /* %????test_flag???0,???0 ???????,?200??????????? */
-  if (test_flag == 0) {
+  if (test_flag == 0) 
+	{
     memset(&bias_array[0], 0, 80U * sizeof(float));
     memset(&bias_array1[0], 0, 80U * sizeof(float));
     yubei = 0.0f;
@@ -297,7 +298,8 @@ float sum(const float x[46])
     sum_Y = 0.0f;
     sum_XY = 0.0f;
     sum_Xsquare = 0.0f;
-    for (i = 0; i < 47; i++) {
+    for (i = 0; i < 47; i++) 
+		{
       if ((signed char)bias_array[i] != 0) {
         sum_X += 1.0f + (float)i;
         sum_Y += (float)(signed char)bias_array[i];
@@ -331,23 +333,30 @@ float sum(const float x[46])
     /*      In_last_bias=Out_last_bias; */
     if (bias >= 40.0f) {
       *Out_bias = 100.0f;
-    } else {
+    } 
+		else 
+		{
       if (bias <= -40.0f) {
         *Out_bias = -100.0f;
       }
     }
 
     /* ???0???30,??????????,?????? */
-    if (yubei > 37.0f) {
-      if (In_last_bias > 20.0f) {
+    if (yubei > 37.0f) 
+		{
+      if (In_last_bias > 20.0f) 
+			{
         *Out_bias = 100.0f;
 
         /* ?????? */
         *Out_last_bias = In_last_bias;
         *Out_last_angle = In_last_angle;
         *Out_angle = In_last_angle;
-      } else {
-        if (In_last_bias < -20.0f) {
+      } 
+			else 
+			{
+        if (In_last_bias < -20.0f) 
+				{
           *Out_bias = -100.0f;
 
           /* ?????? */
@@ -356,14 +365,16 @@ float sum(const float x[46])
           *Out_angle = In_last_angle;
         }
       }
-    } else {
-      *Out_bias = In_last_bias;
+    } 
+//		else 
+//		{
+//      *Out_bias = In_last_bias;
 
-      /* ?????? */
-      *Out_last_bias = In_last_bias;
-      *Out_last_angle = In_last_angle;
-      *Out_angle = In_last_angle;
-    }
+//      /* ?????? */
+//      *Out_last_bias = In_last_bias;
+//      *Out_last_angle = In_last_angle;
+//      *Out_angle = In_last_angle;
+//    }
 
     /*           for i=2:47 */
     /*              if abs(bias_array1(i,1)-bias_aver)>2*biaozhuncha */
@@ -432,21 +443,25 @@ float sum(const float x[46])
     /*              end */
     /* ????????,??????????last_place,???????????????? */
     /*          end */
-  } else if (In_last_bias > 20.0f) {
+  } 
+	else if (In_last_bias > 20.0f) 
+	{
     *Out_bias = 100.0f;
 
     /* ?????? */
     *Out_last_bias = In_last_bias;
     *Out_angle = In_last_angle;
     *Out_last_angle = In_last_angle;
-  } else if (In_last_bias < -20.0f) {
+  } else if (In_last_bias < -20.0f) 
+	{
     *Out_bias = -100.0f;
 
     /* ?????? */
     *Out_last_bias = In_last_bias;
     *Out_angle = In_last_angle;
     *Out_last_angle = In_last_angle;
-  } else {
+  } else 
+	{
     *Out_last_bias = In_last_bias;
     *Out_angle = In_last_angle;
     *Out_last_angle = In_last_angle;
@@ -469,8 +484,5 @@ void Image_Fix(void)	//Í¼ÏñËã·¨
 							&To_next_length,&To_next_angle);
 	last_length = To_next_length;
 	last_angle = To_next_angle;
-
-	
-	
 }
 
