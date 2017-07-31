@@ -185,9 +185,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>449</LineNumber>
+          <LineNumber>321</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134253090</Address>
+          <Address>134252918</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -197,38 +197,6 @@
           <Filename>D:\妗岄潰\CAM\Camera\Project\User\imagefix\image_fix.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>132</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134220466</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\妗岄潰\CAM\Camera\Project\User\copter_datatrans.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\OV5640\../../User/copter_datatrans.c\132</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>138</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134220518</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\妗岄潰\CAM\Camera\Project\User\copter_datatrans.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\OV5640\../../User/copter_datatrans.c\138</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -286,6 +254,26 @@
           <count>10</count>
           <WinNumber>1</WinNumber>
           <ItemText>pre_threshold</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>bias_array</ItemText>
+        </Ww>
+        <Ww>
+          <count>12</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>edge1</ItemText>
+        </Ww>
+        <Ww>
+          <count>13</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>bias_array1</ItemText>
+        </Ww>
+        <Ww>
+          <count>14</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>yubei1</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
