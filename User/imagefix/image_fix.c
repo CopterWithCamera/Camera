@@ -55,11 +55,10 @@ float sum(const float x[80])
   short edge1[3840]  __EXRAM;
   float bias_array[80] __EXRAM;
   float bias_array1[80] __EXRAM;
-void test_simple(const unsigned char a[3840], float In_last_bias, float
-                 In_last_angle, float In_last_row_bias, float *Out_bias,
-                 float *Out_angle, float *Out_last_bias, float
-                 *Out_last_angle, float *Out_row_bias, float
-                 *Out_last_row_bias)
+void test_simple(const unsigned char a[3840], 
+									float In_last_bias, float In_last_angle, float In_last_row_bias, 
+									 float *Out_bias, float *Out_angle,float *Out_row_bias,
+										 float *Out_last_bias, float*Out_last_angle,  float *Out_last_row_bias)
 {
 
   int i0;
