@@ -43,12 +43,17 @@ short edge1[3840] __EXRAM;
 float bias_array[80] __EXRAM;
 float bias_array1[80] __EXRAM;
 short b[9] __EXRAM;
-void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_angle, 
-									float *Out_bias, float *Out_angle, float *Out_last_bias, float *Out_last_angle)
+void bias_angle(const unsigned char a[3840], float In_last_bias, float
+                In_last_angle, float *Out_bias, float *Out_angle, float
+                *Out_last_bias, float *Out_last_angle)
 {
+  unsigned char b_a[3840];
+  short e[3840];
+  short edge1[3840];
   int i0;
   int i;
   int j;
+  short b[9];
   float more_value;
   float less_value;
   float more_counter;
@@ -62,6 +67,8 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
   float cicici;
   int test_flag;
   boolean_T exitg3;
+  float bias_array[80];
+  float bias_array1[80];
   float yubei;
   int negative_number;
   boolean_T exitg2;
@@ -137,14 +144,14 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
   /* ????????? */
   /* ??????(cicic==0) */
   /* test_flag ?????????????,test_flag=0???,=200???,??test_flag???0 */
-  more_value = 0.0;
-  less_value = 0.0;
-  more_counter = 0.0;
-  less_counter = 0.0;
+  more_value = 0.0f;
+  less_value = 0.0f;
+  more_counter = 0.0f;
+  less_counter = 0.0f;
   flag = false;
-  pre_threshold = 20.0;
-  delivery_threshold = 0.0;
-  cicici = 0.0;
+  pre_threshold = 20.0f;
+  delivery_threshold = 0.0f;
+  cicici = 0.0f;
   test_flag = 0;
   exitg3 = false;
   while ((!exitg3) && (!flag)) {
@@ -186,10 +193,10 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
       if (cicici == 5.0f) {
         exitg3 = true;
       } else {
-        more_value = 0.0;
-        less_value = 0.0;
-        more_counter = 0.0;
-        less_counter = 0.0;
+        more_value = 0.0f;
+        less_value = 0.0f;
+        more_counter = 0.0f;
+        less_counter = 0.0f;
       }
     }
   }
@@ -210,7 +217,7 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
   if (test_flag == 0) {
     memset(&bias_array[0], 0, 80U * sizeof(float));
     memset(&bias_array1[0], 0, 80U * sizeof(float));
-    yubei = 0.0;
+    yubei = 0.0f;
     for (i = 0; i < 46; i++) {
       j = 0;
       exitg2 = false;
@@ -238,8 +245,7 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
     }
 
     negative_number = 0;
-    if ((sum(bias_array) - 1903.5f) * (sum(bias_array) - 1903.5f) < 0.0f)
-	{
+    if ((sum(bias_array) - 1903.5f) * (sum(bias_array1) - 1903.5f) < 0.0f) {
       negative_number = 1;
     }
 
@@ -261,22 +267,22 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
       biaozhuncha += c_a * c_a;
     }
 
-    biaozhuncha = sqrt(biaozhuncha / (47.0f- yubei));
+    biaozhuncha = sqrt(biaozhuncha / (47.0f - yubei));
     for (i = 0; i < 46; i++) {
       if (fabs((float)(signed char)bias_array[i + 1] - bias_aver) > biaozhuncha)
       {
-        bias_array[i + 1] = 0.0;
+        bias_array[i + 1] = 0.0f;
       }
     }
 
     /*      %??????(??????????-??) */
-    yubei = 0.0;
+    yubei = 0.0f;
 
     /* ????,?????????????????????,???????? */
-    sum_X = 0.0;
-    sum_Y = 0.0;
-    sum_XY = 0.0;
-    sum_Xsquare = 0.0;
+    sum_X = 0.0f;
+    sum_Y = 0.0f;
+    sum_XY = 0.0f;
+    sum_Xsquare = 0.0f;
     for (i = 0; i < 47; i++) {
       if ((signed char)bias_array[i] == 0) {
         yubei++;
@@ -295,7 +301,7 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
     sum_XY /= 47.0f - yubei;
     sum_Xsquare /= 47.0f - yubei;
     gradien = (sum_XY - sum_X * sum_Y) / (sum_Xsquare - sum_X * sum_X);
-    angle = atan(gradien) * 180.0f / 3.1415926535897931f;
+    angle = atan(gradien) * 180.0f / 3.1416f;
 
     /* ???????,??????? */
     *Out_angle = angle;
@@ -357,17 +363,13 @@ void bias_angle(const unsigned char a[3840], float In_last_bias, float In_last_a
     *Out_bias = In_last_bias;
   }
 }
-
-
-
-
-
-void row_bias(const unsigned char a[3840], float In_last_row_bias, 
-								float  *Out_row_bias, float *Out_last_row_bias)
+void row_bias(const unsigned char a[3840], float In_last_row_bias, float
+              *Out_row_bias, float *Out_last_row_bias)
 {
   int i0;
   int i;
   int j;
+  short b[9];
   float more_value;
   float less_value;
   float more_counter;
@@ -456,14 +458,14 @@ void row_bias(const unsigned char a[3840], float In_last_row_bias,
   /* ????????? */
   /* ??????(cicic==0) */
   /* test_flag ?????????????,test_flag=0???,=200???,??test_flag???0 */
-  more_value = 0.0;
-  less_value = 0.0;
-  more_counter = 0.0;
-  less_counter = 0.0;
+  more_value = 0.0f;
+  less_value = 0.0f;
+  more_counter = 0.0f;
+  less_counter = 0.0f;
   flag = false;
-  pre_threshold = 20.0;
-  delivery_threshold = 0.0;
-  cicici = 0.0;
+  pre_threshold = 20.0f;
+  delivery_threshold = 0.0f;
+  cicici = 0.0f;
   test_flag = 0;
   exitg3 = false;
   while ((!exitg3) && (!flag)) {
@@ -562,7 +564,7 @@ void row_bias(const unsigned char a[3840], float In_last_row_bias,
       memcpy(&bias_array[0], &bias_array1[0], 80U * sizeof(float));
     }
 
-    yubei1 = 0.0;
+    yubei1 = 0.0f;
     for (i = 0; i < 78; i++) {
       if ((signed char)bias_array[i + 1] == 0) {
         yubei1++;
@@ -570,7 +572,7 @@ void row_bias(const unsigned char a[3840], float In_last_row_bias,
     }
 
     positive_number = 0;
-    if (yubei1 > 58.0f) {
+    if (yubei1 >= 58.0f) {
       positive_number = 1;
     }
 
@@ -616,14 +618,14 @@ void row_bias(const unsigned char a[3840], float In_last_row_bias,
     /* ???????,??????? */
     bias = (gradien * 40.0f + (sum_Xsquare * sum_Y - sum_X * sum_XY) /
             (sum_Xsquare - sum_X * sum_X)) - 24.5f;
-    if (fabs(atan(gradien) * 180.0 / 3.1415926535897931) > 60.0f) {
+    if (fabs(atan(gradien) * 180.0f / 3.1416f) > 45.0f) {
       bias = In_last_row_bias;
     }
 
     if (bias > 24.5f) {
       bias = 100.0f;
     } else {
-      if (bias < -24.5f) {
+      if (bias < -24.5f ){
         bias = -100.0f;
       }
     }
@@ -657,9 +659,6 @@ void row_bias(const unsigned char a[3840], float In_last_row_bias,
     *Out_last_row_bias = In_last_row_bias;
   }
 }
-
-
-
 float  	in_length=0.0f,
 				in_angle=0.0f,
 				In_length_pitch=-100.0f,
