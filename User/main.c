@@ -77,7 +77,7 @@ void My_Camera_Init(void)
 
 	OV5640_Init();			//DCMI  DMA  INTERRUPT
 	OV5640_RGB565Config();
-	OV5640_AUTO_FOCUS();
+//	OV5640_AUTO_FOCUS();
 }
 
 
