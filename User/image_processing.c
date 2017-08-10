@@ -516,12 +516,12 @@ void Image_Process(void)
 
 	Image_Output(0);	//数据输出（原始图像相关内容）
 	
-	if(mode == 0)
-	{
+//	if(mode == 0)
+//	{
 		//只有模式0才会向飞机发送数据
 		Image_Fix();		//图像处理函数
 		Camera_Data_Send();	//向飞控发送内容          //发送运算结果数据
-	}
+//	}
 	
 //	Column_To_Line();	//从列向量矩阵恢复为行矩阵
 //	Image_Output(1);	//数据输出（运算后内容）
