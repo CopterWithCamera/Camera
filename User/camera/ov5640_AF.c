@@ -391,13 +391,13 @@ static void OV5640_FOCUS_AD5820_Single_Focus()
         
         if(state == 0x00)
         {
-//            state = (u8)OV5640_ReadReg(0x3029);
-//            if(state == 0x10)
- //           {   
+//			state = (u8)OV5640_ReadReg(0x3029);
+//			if(state == 0x10)
+//			{   
                 CAMERA_DEBUG("single focused!\r\n");
                 break;
- //           }
-        }			
+//          }
+        }
         Delay(10);
         iteration --;
 
