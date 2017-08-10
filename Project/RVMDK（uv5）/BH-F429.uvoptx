@@ -117,6 +117,13 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+          <Name>槫`
+?Tw槫`
+</Name>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -310,8 +317,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\User\image_processing.c</PathWithFileName>
-      <FilenameWithoutPath>image_processing.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\User\imagefix\image_fix.c</PathWithFileName>
+      <FilenameWithoutPath>image_fix.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -322,8 +329,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\User\imagefix\image_fix.c</PathWithFileName>
-      <FilenameWithoutPath>image_fix.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\User\image_processing.c</PathWithFileName>
+      <FilenameWithoutPath>image_processing.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

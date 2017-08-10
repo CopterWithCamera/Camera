@@ -24,24 +24,17 @@
   */
 static void NVIC_Configuration(void)
 {
-  NVIC_InitTypeDef NVIC_InitStructure;
-  
-  /* 配置NVIC为优先级组1 */
-//  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-  
-  /* 配置中断源：按键1 */
-  NVIC_InitStructure.NVIC_IRQChannel = KEY1_INT_EXTI_IRQ;
-  /* 配置抢占优先级：1 */
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-  /* 配置子优先级：1 */
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-  /* 使能中断通道 */
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  
-  /* 配置中断源：按键2，其他使用上面相关配置 */  
-  NVIC_InitStructure.NVIC_IRQChannel = KEY2_INT_EXTI_IRQ;
-  NVIC_Init(&NVIC_InitStructure);
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	NVIC_InitStructure.NVIC_IRQChannel = KEY1_INT_EXTI_IRQ;		/* 配置中断源：按键1 */
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;	/* 配置抢占优先级：1 */
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;			/* 配置子优先级：1 */
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			/* 使能中断通道 */
+	NVIC_Init(&NVIC_InitStructure);
+
+	/* 配置中断源：按键2，其他使用上面相关配置 */  
+	NVIC_InitStructure.NVIC_IRQChannel = KEY2_INT_EXTI_IRQ;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
  /**
@@ -63,8 +56,6 @@ void EXTI_Key_Config(void)
 	/* 配置 NVIC */
 	NVIC_Configuration();
 	
-	
-  
 	/* 选择按键1的引脚 */ 
 	GPIO_InitStructure.GPIO_Pin = KEY1_INT_GPIO_PIN;
 	/* 设置引脚为输入模式 */ 
@@ -91,7 +82,7 @@ void EXTI_Key_Config(void)
   
   
 	/* 选择按键2的引脚 */ 
-	GPIO_InitStructure.GPIO_Pin = KEY2_INT_GPIO_PIN;  
+	GPIO_InitStructure.GPIO_Pin = KEY2_INT_GPIO_PIN;
 	/* 其他配置与上面相同 */
 	GPIO_Init(KEY2_INT_GPIO_PORT, &GPIO_InitStructure);      
 

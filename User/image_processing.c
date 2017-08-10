@@ -385,7 +385,8 @@ void Mode_Set(void)	//模式设置函数，在初始化过程中和切换模式时均有调用
 	}
 }
 
-void Mode_Change(void)	//在按键中断中调用
+//在按键中断中调用
+void Mode_Change(void)	
 {
 	mode++;
 	if(mode>6)
@@ -394,7 +395,6 @@ void Mode_Change(void)	//在按键中断中调用
 	}
 	
 	Mode_Set();
-
 }
 
 void Image_Output(u8 sendmode)	//mode 0--运算之前调用；1--运算之后调用（原图可以在运算的同时传输，运算后图只能在运算结束后传输）
@@ -413,7 +413,6 @@ void Image_Output(u8 sendmode)	//mode 0--运算之前调用；1--运算之后调用（原图可以
 		#if defined(__DISPLAY_IMAGE)
 			if(flag_Image)
 				Display_Image();	//从串口输出图像，配合山外多功能调试助手显示
-		
 		#endif
 			
 		#if defined(__PARAMETER_FPS)

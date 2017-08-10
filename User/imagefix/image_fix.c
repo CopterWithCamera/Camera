@@ -45,60 +45,69 @@ float sum(const float x[46])
   return y;
 }
 
-float b_a[3840] __EXRAM;
-float e[3840] __EXRAM;
-short f[3840] __EXRAM;
-float b_e[3840] __EXRAM;
-float weight_matric[1380] __EXRAM;
-void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
+void test_simple(const unsigned char a[3840], float last_quxian, float *quxian,
+                 float *angle)
 {
-  u8 counterrrr = 0;
+  unsigned char b_a[3840];
+  short e[3840];
+  short edge1[3840];
   int i0;
   int i;
   int j;
-
   short b[9];
   float more_value;
   float less_value;
   float more_counter;
-  float less_counter;
-  boolean_T flag;
   int b_min;
-  float pre_threshold;
+  float less_counter;
   int k;
+  boolean_T flag;
+  int b_max;
+  float pre_threshold;
   float delivery_threshold;
-  float b_max;
-  float shuzu[61];
-  float summ;
-  int cishu;
-  signed char bias[46];
+  float cicici;
+  int test_flag;
+  boolean_T exitg3;
+  float bias[80];
+  float bias1[80];
   float yubei;
   boolean_T exitg2;
+  float bias_aver;
   boolean_T exitg1;
-  int high;
-  int low;
-  int b_j;
-  float thod;
-  float bias1[46];
+  float biaozhuncha;
+  float c_a;
+  float b_last_quxian;
+  float sum_X;
+  float sum_Y;
+  float sum_XY;
+  float sum_Xsquare;
+  (void)last_quxian;
+  *quxian = 0.0;
+  *angle = 0.0;
 
+  /*  clear all; */
+  /* % 读图做灰度处理并且转化为浮点类型 */
+  /*  a=imread('532.bmp'); */
+  /*  a=rgb2gray(a); */
+  /*  %% 膨胀-腐蚀-边缘检测 */
   /* 膨胀 */
   for (i0 = 0; i0 < 3840; i0++) {
     b_a[i0] = a[i0];
-    e[i0] = 0.0;
-    f[i0] = 0;
+    e[i0] = 0;
+    edge1[i0] = 0;
   }
 
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      b[0] = (short)((int)b_a[i + 48 * j] - 1);
-      b[1] = (short)((int)b_a[i + 48 * (j + 1)] - 2);
-      b[2] = (short)((int)b_a[i + 48 * (2 + j)] - 3);
-      b[3] = (short)((int)b_a[(i + 48 * j) + 1] - 4);
-      b[4] = (short)((int)b_a[(i + 48 * (j + 1)) + 1] - 5);
-      b[5] = (short)((int)b_a[(i + 48 * (2 + j)) + 1] - 6);
-      b[6] = (short)((int)b_a[(i + 48 * j) + 2] - 7);
-      b[7] = (short)((int)b_a[(i + 48 * (j + 1)) + 2] - 8);
-      b[8] = (short)((int)b_a[(i + 48 * (2 + j)) + 2] - 9);
+      b[0] = (short)(b_a[i + 48 * j] - 1);
+      b[1] = (short)(b_a[i + 48 * (j + 1)] - 2);
+      b[2] = (short)(b_a[i + 48 * (2 + j)] - 3);
+      b[3] = (short)(b_a[(i + 48 * j) + 1] - 4);
+      b[4] = (short)(b_a[(i + 48 * (j + 1)) + 1] - 5);
+      b[5] = (short)(b_a[(i + 48 * (2 + j)) + 1] - 6);
+      b[6] = (short)(b_a[(i + 48 * j) + 2] - 7);
+      b[7] = (short)(b_a[(i + 48 * (j + 1)) + 2] - 8);
+      b[8] = (short)(b_a[(i + 48 * (2 + j)) + 2] - 9);
       b_min = 255;
       for (k = 0; k < 9; k++) {
         if (b[k] < b_min) {
@@ -106,39 +115,40 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
         }
       }
 
-      e[(i + 48 * (j + 1)) + 1] = b_min;
+      e[(i + 48 * (j + 1)) + 1] = (short)b_min;
     }
   }
 
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      b[0] = (short)(1 + (int)e[i + 48 * j]);
-      b[1] = (short)(2 + (int)e[i + 48 * (j + 1)]);
-      b[2] = (short)(3 + (int)e[i + 48 * (2 + j)]);
-      b[3] = (short)(4 + (int)e[(i + 48 * j) + 1]);
-      b[4] = (short)(5 + (int)e[(i + 48 * (j + 1)) + 1]);
-      b[5] = (short)(6 + (int)e[(i + 48 * (2 + j)) + 1]);
-      b[6] = (short)(7 + (int)e[(i + 48 * j) + 2]);
-      b[7] = (short)(8 + (int)e[(i + 48 * (j + 1)) + 2]);
-      b[8] = (short)(9 + (int)e[(i + 48 * (2 + j)) + 2]);
-      b_max = 0.0;
+      b[0] = (short)(1 + e[i + 48 * j]);
+      b[1] = (short)(2 + e[i + 48 * (j + 1)]);
+      b[2] = (short)(3 + e[i + 48 * (2 + j)]);
+      b[3] = (short)(4 + e[(i + 48 * j) + 1]);
+      b[4] = (short)(5 + e[(i + 48 * (j + 1)) + 1]);
+      b[5] = (short)(6 + e[(i + 48 * (2 + j)) + 1]);
+      b[6] = (short)(7 + e[(i + 48 * j) + 2]);
+      b[7] = (short)(8 + e[(i + 48 * (j + 1)) + 2]);
+      b[8] = (short)(9 + e[(i + 48 * (2 + j)) + 2]);
+      b_max = 0;
       for (k = 0; k < 9; k++) {
-        if (b[k] > (int)b_max) {
+        if (b[k] > b_max) {
           b_max = b[k];
         }
       }
 
-      f[(i + 48 * (j + 1)) + 1] = (short)b_max;
+      edge1[(i + 48 * (j + 1)) + 1] = (short)fabs(b_max - e[(i + 48 * (j + 1)) +
+        1]);
     }
   }
 
-  for (i0 = 0; i0 < 3840; i0++) {
-    b_e[i0] = e[i0] - (float)f[i0];
-  }
-
-  b_abs(b_e, b_a);
-
-  /* % 最大类间差 求二值化阈值 */
+  /*  figure; */
+  /*  imshow(edge1); */
+  /*  title('边缘') */
+  /*     %% 迭代法 求二值化阈值 */
+  /* 迭代法判断动态阈值 */
+  /* 只能迭代十次（cicic==0） */
+  /* test_flag 设置为测试场地全白的标志位，test_flag=0为正常，=200为出界，每次test_flag预先置0 */
   more_value = 0.0;
   less_value = 0.0;
   more_counter = 0.0;
@@ -146,200 +156,203 @@ void tuxiang_ver1(const unsigned char a[3840], float *quxian, float *place)
   flag = false;
   pre_threshold = 20.0;
   delivery_threshold = 0.0;
-  
-  while (!flag) {
+  cicici = 0.0;
+  test_flag = 0;
+  exitg3 = false;
+  while ((!exitg3) && (!flag)) {
     for (i = 0; i < 46; i++) {
       for (j = 0; j < 78; j++) {
-        if (b_a[(i + 48 * (j + 1)) + 1] > pre_threshold) {
+        if (edge1[(i + 48 * (j + 1)) + 1] > pre_threshold) {
           /* %与预先设置的阈值做对比 */
-          more_value += b_a[(i + 48 * (j + 1)) + 1];
+          more_value += (float)edge1[(i + 48 * (j + 1)) + 1];
 
           /* % 求和 */
           more_counter++;
 
           /* % 数量+1 */
         } else {
-          less_value += b_a[(i + 48 * (j + 1)) + 1];
+          less_value += (float)edge1[(i + 48 * (j + 1)) + 1];
           less_counter++;
         }
       }
     }
-	
-    delivery_threshold = (more_value / more_counter + less_value / less_counter)
-      / 2.0f;
-	if(less_counter > 3553)
-	{
-		length_pitch = 1;
-		break;
-	}
-	else
-	{
-		length_pitch = 0;
-	}
 
-    /* %求分割后的阈值 */
-    if (fabs(delivery_threshold - pre_threshold) < 0.05f) {
-      /* % 与预先设置的阈值做对比 */
-      flag = true;
+    /* 判断test_flag标志位环节 */
+    if (less_counter > 3553.0f) {
+      test_flag = 200;
+      exitg3 = true;
+    } else {
+      delivery_threshold = (more_value / more_counter + less_value /
+                            less_counter) / 2.0f;
+
+      /* %求分割后的阈值 */
+      if (fabs(delivery_threshold - pre_threshold) < 0.05f) {
+        /* % 与预先设置的阈值做对比 */
+        flag = true;
+      }
+
+      pre_threshold = delivery_threshold;
+
+      /* 判断次数环节 */
+      cicici++;
+      if (cicici == 5.0f) {
+        exitg3 = true;
+      } else {
+        more_value = 0.0;
+        less_value = 0.0;
+        more_counter = 0.0;
+        less_counter = 0.0;
+      }
     }
-	counterrrr++;
-	if(counterrrr > 10)
-		break;
-    pre_threshold = delivery_threshold;
-    more_value = 0.0;
-    less_value = 0.0;
-    more_counter = 0.0;
-    less_counter = 0.0;
   }
 
-  /*  %% edge2 是 盛放二值化后的图像  */
-  /*  %%图像二值化 */
-  memset(&e[0], 0, 3840U * sizeof(float));
-
-  /* % 利用模板寻找道路 */
-  /* %权值矩阵 下面的循环是每个点的权值计算方法 */
+  /*     %% edge2 是 盛放二值化后的图像 */
+  /*     %%图像二值化 */
   for (i = 0; i < 46; i++) {
     for (j = 0; j < 78; j++) {
-      if (b_a[(i + 48 * (j + 1)) + 1] < delivery_threshold) {
-        e[(i + 48 * (j + 1)) + 1] = 0.0;
+      if (edge1[(i + 48 * (j + 1)) + 1] <= delivery_threshold) {
+        edge1[(i + 48 * (j + 1)) + 1] = 0;
       } else {
-        e[(i + 48 * (j + 1)) + 1] = 255.0;
+        edge1[(i + 48 * (j + 1)) + 1] = 255;
       }
-    }
-
-    for (j = 0; j < 30; j++) {
-      weight_matric[i + 46 * j] = 1.0f - sqrt((24.5f - (1.0f + (float)i)) * (24.5f
-        - (1.0f + (float)i)) + (15.5f - (1.0f + (float)j)) * (15.5f - (1.0f +
-        (float)j))) / 25.93260495977988f;
     }
   }
 
-  memset(&shuzu[0], 0, 61U * sizeof(float));
-
-  /* %存储每一个模板算出来的平均灰度值 */
-  summ = 0.0;
-
-  /* %每一个模板的灰度值总值 */
-  for (cishu = 0; cishu < 51; cishu++) {
-    /* % 一个48*20的模板扫过 48*80的图像需要走61次 */
+  /*     %%首先判断test_flag是否为0，假如为0 计算偏差和角度，为200则判断左出界或者右出界 */
+  if (test_flag == 0) {
+    memset(&bias[0], 0, 80U * sizeof(float));
+    memset(&bias1[0], 0, 80U * sizeof(float));
+    yubei = 0.0;
     for (i = 0; i < 46; i++) {
-      for (j = 0; j < 30; j++) {
-        summ += e[i + 48 * (cishu + j)] * weight_matric[i + 46 * j];
-
-        /* %对应位置的图像值乘以模板对应位置的权值 */
-      }
-    }
-
-    shuzu[cishu] = summ / 920.0f;
-
-    /* %存储平均灰度值 */
-    summ = 0.0;
-
-    /* %归0 */
-  }
-
-  /* %寻找最大灰度值 位置存储在place变量中  即起始列 */
-  if (shuzu[0] > shuzu[1]) {
-    b_max = shuzu[0];
-    *place = 1.0;
-  } else {
-    b_max = shuzu[1];
-    *place = 2.0;
-  }
-
-  for (i = 0; i < 58; i++) {
-    if (b_max < shuzu[i + 2]) {
-      *place = 3.0f + (float)i;
-      b_max = shuzu[3 + i];
-    }
-  }
-
-  /*   figure; */
-  /*   imshow(edge2(:,place:place+29)); %%测试显示 */
-  for (i = 0; i < 46; i++) {
-    bias[i] = 0;
-  }
-
-  if (*place > 30.0f) {
-    for (i = 0; i < 45; i++) {
-      i0 = (int)(((float)*place + 29.0F) + (1.0F - (float)*place));
       j = 0;
       exitg2 = false;
-      while ((!exitg2) && (j <= i0 - 1)) {
-        b_j = (int)*place + j;
-        if (e[(48 * (b_j - 1) - i) + 45] - e[(48 * (b_j - 2) - i) + 45] == 255.0f)
-        {
-          bias[44 - i] = (signed char)b_j;
+      while ((!exitg2) && (j < 78)) {
+        if (edge1[(48 * (j + 1) - i) + 46] - edge1[(48 * (2 + j) - i) + 46] ==
+            255) {
+          bias[46 - i] = 2.0f + (float)j;
           exitg2 = true;
         } else {
           j++;
         }
       }
-    }
-  } else if (*place < 25.0f) {
-    for (i = 0; i < 45; i++) {
-      i0 = (int)-((float)*place + (-1.0F - ((float)*place + 29.0F)));
+
       j = 0;
       exitg1 = false;
-      while ((!exitg1) && (j <= i0 - 1)) {
-        b_j = ((int)*place - j) + 29;
-        if (e[(48 * (b_j - 1) - i) + 45] - e[(48 * b_j - i) + 45] == 255.0f) {
-          bias[44 - i] = (signed char)b_j;
+      while ((!exitg1) && (j < 78)) {
+        if (edge1[(48 * (78 - j) - i) + 46] - edge1[(48 * (77 - j) - i) + 46] ==
+            255) {
+          bias1[46 - i] = 79.0f + -(float)j;
           exitg1 = true;
         } else {
           j++;
         }
       }
     }
-  } else {
-    for (i = 0; i < 46; i++) {
-      bias[i] = 0;
+
+    if (fabs(sum(bias) - 1863.0f) > fabs(sum(bias1) - 1863.0f)) {
+      memcpy(&bias[0], &bias1[0], 80U * sizeof(float));
     }
-  }
 
-  yubei = 0.0;
-  if (bias[45] > bias[44]) {
-    high = bias[45];
-    low = bias[44];
-  } else {
-    high = bias[44];
-    low = bias[45];
-  }
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias[i] == 0) {
+        yubei++;
+      }
+    }
 
-  thod = (float)(high - low) / 2.0f;
-  for (i = 0; i < 46; i++) {
-    bias1[i] = bias[i];
-  }
+    /* 进行误差大数调整（误差较大的记为横线，为0剔除，剩下的为竖线） */
+    bias_aver = sum(bias) / (46.0f - yubei);
+    biaozhuncha = 0.0;
+    for (i = 0; i < 46; i++) {
+      c_a = (float)(signed char)bias[i + 1] - bias_aver;
+      biaozhuncha += c_a * c_a;
+    }
 
-  for (i = 0; i < 44; i++) {
-    if (fabs(bias[45 - i] - bias[44 - i]) > thod) {
-      if (fabs(bias[44 - i] - bias[43 - i]) > thod) {
-        bias1[44 - i] = bias[45 - i];
+    biaozhuncha = sqrt(biaozhuncha / (47.0f - yubei));
+    for (i = 0; i < 46; i++) {
+      if (fabs((float)(signed char)bias[i + 1] - bias_aver) > biaozhuncha) {
+        bias[i + 1] = 0.0;
+      }
+    }
+
+    /* 计算直线偏移（信任是直线的点的平均-中点） */
+    yubei = 0.0;
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias[i] == 0) {
+        yubei++;
+      }
+    }
+
+    *quxian = sum(bias) / (47.0f - yubei) - 40.0f;
+
+    /* 设定偏移死区 */
+    if (fabs(*quxian) < 1.0f) {
+      *quxian = 0.0;
+    }
+
+    b_last_quxian = *quxian;
+
+    /* 计算角度，将置信任的竖线坐标进行最小二乘法的直线拟合，利用斜率计算偏角 */
+    sum_X = 0.0;
+    sum_Y = 0.0;
+    sum_XY = 0.0;
+    sum_Xsquare = 0.0;
+    for (i = 0; i < 47; i++) {
+      if ((signed char)bias[i] != 0) {
+        sum_X += 1.0f + (float)i;
+        sum_Y += (float)(signed char)bias[i];
+        sum_XY += (float)((1 + i) * (signed char)bias[i]);
+        sum_Xsquare += (float)((1 + i) * (1 + i));
+      }
+    }
+
+    sum_X /= 47.0f - yubei;
+    sum_Y /= 47.0f - yubei;
+    sum_XY /= 47.0f - yubei;
+    sum_Xsquare /= 47.0f - yubei;
+    *angle = atan((sum_XY - sum_X * sum_Y) / (sum_Xsquare - sum_X * sum_X)) *
+      180.0 / 3.1415926535897931;
+
+    /* 负为飞机头左转，正为飞机头右转 */
+    /* 设定+-2°区间为死区 */
+    if (fabs(*angle) <= 2.0f) {
+      *angle = 0.0f;
+    }
+
+    /* 假如置0点多余30，认为只有标志线的边缘，直接开始判断 */
+    if (yubei > 30.0f) {
+      if (*quxian > 20.0f) {
+        *quxian = -100.0;
+
+        /* 从右边出去了 */
       } else {
-        bias1[44 - i] = (float)(bias[45 - i] + bias[43 - i]) / 2.0f;
+        if (*quxian < -20.0f) {
+          *quxian = 100.0;
+
+          /* 从左边出去了 */
+        }
+      }
+    }
+
+    /*  假如置0点大于5 认为有横线，进入横线的偏差计算模式，输出为row_bias */
+    if (b_last_quxian > 20.0f) {
+      *quxian = -100.0f;
+
+      /* 从右边出去了 */
+    } else {
+      if (b_last_quxian < -20.0f) {
+        *quxian = 100.0f;
+
+        /* 从左边出去了 */
       }
     }
   }
-
-  if (fabs(bias[0] - bias[1]) > thod) {
-    bias1[0] = bias[1];
-  }
-
-  for (i = 0; i < 46; i++) {
-    if (bias1[45 - i] == 0.0f) {
-      yubei++;
-    }
-  }
-
-  *quxian = sum(bias1) / (46.0f - yubei) - 40.0f;
-  if ((*place >= 25.0f) && (*place <= 30.0f)) {
-    *quxian = 0.0;
-  }
 }
 
-float tmp;
+float tmp = 0.0f;
 void Image_Fix(void)	//图像算法
 {
-	tuxiang_ver1(gray_column_array,&length,&tmp);
+//	tuxiang_ver1(gray_column_array,&length,&tmp);
+//	test_simple(gray_column_array,tmp,&length,&angle);
+//	tmp = length;
 }
 

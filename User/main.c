@@ -195,7 +195,7 @@ int main(void)
 {
 	/*摄像头与RGB LED灯共用引脚，不要同时使用LED和摄像头*/
 	
-	NVIC_PriorityGroupConfig (NVIC_PriorityGroup_1);	//设定中断优先级分组
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);	//设定中断优先级分组
 	
 	Debug_USART_Config();	//串口1
 	USART2_Config();		//串口2
@@ -203,8 +203,6 @@ int main(void)
 	My_RAM_TEST();		//内存分配情况测试
 	EXTI_Key_Config();	//初始化外部中断按键
 
-	My_Camera_Init();	//初始化OV5640
-	
 	#ifdef __NRF_DISPLAY
 		NRF24L01_Init();	//NRF24L01
 	#endif
@@ -213,12 +211,16 @@ int main(void)
 		SD_State = SDCard_Init();	//初始化SD卡  0 -- 挂载失败  1 -- 挂载成功
 	#endif
 	
-	//开启传输
+	//初始化OV5640
+	My_Camera_Init();	
+	
+	//开启第一帧传输
 	OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//开启第一次传输
 	DCMI_Cmd(ENABLE);
 	DCMI_CaptureCmd(ENABLE);
 	
-	Mode_Set();	//设置数据传输模式
+	//设置系统工作模式
+	Mode_Set();	
 	
 	/*DMA直接传输摄像头数据到LCD屏幕显示*/
 	while(1)
