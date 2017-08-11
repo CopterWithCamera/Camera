@@ -355,5 +355,7 @@ void Image_Fix(void)	//Í¼ÏñËã·¨
 //	tuxiang_ver1(gray_column_array,&length,&tmp);
 //	test_simple(gray_column_array,tmp,&length,&angle);
 //	tmp = length;
+	
+	tracking_state = 1;
 }
 
