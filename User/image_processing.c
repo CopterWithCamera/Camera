@@ -5,6 +5,7 @@
 #include "bsp_spi_nrf.h"
 #include "image_fix.h"
 #include "copter_datatrans.h"
+#include "./buzzer/bsp_buzzer.h"
 
 /*
  * ****** 能够使用的资源 *******
@@ -524,6 +525,10 @@ void Image_Process(void)
 		//只有模式0才会向飞机发送数据
 		Image_Fix();		//图像处理函数
 		Camera_Data_Send();	//向飞控发送内容          //发送运算结果数据
+		if(tracking_state)	//跟踪成功时蜂鸣器报警提示
+		{
+			BUZZER(ON);
+		}
 //	}
 	
 //	Column_To_Line();	//从列向量矩阵恢复为行矩阵

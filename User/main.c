@@ -30,6 +30,7 @@
 #include "rgbTObmp.h"
 #include "bsp_spi_nrf.h"
 #include "copter_datatrans.h"
+#include "./buzzer/bsp_buzzer.h"
 
 /*						*\
 		简单任务管理
@@ -218,6 +219,9 @@ int main(void)
 	OV5640_DMA_Config((uint32_t)DCMI_IN_BUFFER_ARRAY,img_height*img_width*2/4);	//开启第一次传输
 	DCMI_Cmd(ENABLE);
 	DCMI_CaptureCmd(ENABLE);
+	
+	//蜂鸣器初始化
+	BUZZER_GPIO_Config();
 	
 	//设置系统工作模式
 	Mode_Set();	
