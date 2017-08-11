@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F429_439xx,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF;..\..\User\imagefix</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\User\FATFS;..\..\User\FATFS\drivers;..\..\User\NRF;..\..\User\imagefix;..\..\User\buzzer</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -453,6 +453,11 @@
               <FileName>bsp_spi_nrf.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\NRF\bsp_spi_nrf.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_buzzer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\buzzer\bsp_buzzer.c</FilePath>
             </File>
           </Files>
         </Group>
