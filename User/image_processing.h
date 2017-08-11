@@ -34,6 +34,9 @@ extern float length;		//偏差
 extern float length_pitch;	//速度
 extern float angle;			//角度
 
+//跟踪状态
+extern float tracking_state;	//0 失败	1 成功
+
 //数据传输函数
 uint8_t Get_Gray(uint16_t row,uint16_t column);				//从Gray区提取数据
 void To_Result(uint16_t row,uint16_t column,uint8_t gray);	//向Result区存入数据

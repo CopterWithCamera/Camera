@@ -177,7 +177,7 @@ void Camera_Send_Status(void)
 	Data_Buffer[cnt++] = BYTE2(tmp_f);
 	Data_Buffer[cnt++] = BYTE3(tmp_f);
 	
-	tmp_f = 0.0f;							//¿Õ
+	tmp_f = tracking_state;					//¸ú×Ù×´Ì¬
 	Data_Buffer[cnt++] = BYTE0(tmp_f);
 	Data_Buffer[cnt++] = BYTE1(tmp_f);
 	Data_Buffer[cnt++] = BYTE2(tmp_f);

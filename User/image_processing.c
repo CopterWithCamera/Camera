@@ -38,6 +38,9 @@ float length;	//偏差
 float angle;
 float length_pitch;
 
+//匹配结果
+float tracking_state = 0;	//跟踪状态	0 -- 失败	1 -- 成功
+
 //运行模式
 unsigned char mode = 0;		//mode在这里！！！
 

@@ -22,7 +22,8 @@ typedef u8 boolean_T;
 	  3.float length;												对外输出参数1（将数值赋值给变量后将自动输出）
 	  4.float length_pitch;											对外输出参数2
 	  4.float angle;												对外输出参数3（将数值赋值给变量后将自动输出）
-	  5.使用 __EXRAM 尾缀向外部SDRAM中定义大数组    	例子：int array[1000] __EXRAM;
+	  5.float tracking_state										跟踪状态 0：失败  1：成功
+	  6.使用 __EXRAM 尾缀向外部SDRAM中定义大数组    	例子：int array[1000] __EXRAM;
 */
 
 void b_abs(const float x[3840], float y[3840])
